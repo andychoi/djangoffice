@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django import template
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_str
 from djangoffice.utils.moneyfmt import moneyfmt
 
 register = template.Library()
@@ -20,4 +20,4 @@ def money(amount, currency_symbol=''):
         return u'%s0.00' % currency_symbol
     elif not isinstance(amount, Decimal):
         amount = Decimal(amount)
-    return force_unicode(moneyfmt(amount, curr=currency_symbol))
+    return force_str(moneyfmt(amount, curr=currency_symbol))

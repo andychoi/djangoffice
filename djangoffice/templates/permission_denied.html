@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Permission Denied | {% endblock %}
-{% block menu %}{% menu %}{% endblock %}
+{% block menu %}{% include_menu %}{% endblock %}
 {% block content %}
 <h1>Permission Denied</h1>
 <p>You do not have permission to perform the requested action.</p>

@@ -4,13 +4,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import views as auth_views
-from django.core.urlresolvers import reverse
-from django.db import backend, connection, transaction
+from django.urls import reverse
+from django.db import connection, transaction
 from django.db.models import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
-from django.views.generic import create_update, list_detail
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
 
 from djangoffice import models
 from djangoffice.auth import is_admin, is_admin_or_manager, user_has_permission
@@ -18,6 +19,7 @@ from djangoffice.forms.rates import EditRateForm, UserRateBaseForm
 from djangoffice.forms.users import AdminUserForm, EditUserForm, UserForm
 from djangoffice.models import Job, Task, UserRate, UserProfile
 from djangoffice.views import SortHeaders
+
 
 #####################
 # Utility functions #
@@ -31,9 +33,9 @@ def assign_user_to_admin_job_tasks(user):
     task_ids = [task.id for task in admin_job.tasks.all()]
     db_table = Task._meta.get_field('assigned_users', True).m2m_db_table()
     query = 'INSERT INTO %s (%s,%s) VALUES %s' % (
-        backend.quote_name(db_table),
-        backend.quote_name('task_id'),
-        backend.quote_name('user_id'),
+        connection.ops.quote_name(db_table),
+        connection.ops.quote_name('task_id'),
+        connection.ops.quote_name('user_id'),
         ','.join(['(%s,%s)'] * len(task_ids)),
     )
     params = []
@@ -54,7 +56,7 @@ def users_accessible_to_user(user):
     Otherwise, Managers may only see themselves and their managed Users;
     Users may only see themselves.
     """
-    profile = user.get_profile()
+    profile = user.userprofile
     if (profile.is_admin()
         or (profile.is_manager() and models.access.managers_view_all_users)):
         return User.objects.exclude(userprofile__role=UserProfile.ADMINISTRATOR_ROLE)
@@ -67,17 +69,18 @@ def users_accessible_to_user(user):
 # Views #
 #########
 
-def login(request):
-    """
-    Logs a user in - a simple wrapper around the contrib login view.
-    """
-    return auth_views.login(request, template_name='users/login.html')
+# def login(request):
+#     """
+#     Logs a user in - a simple wrapper around the contrib login view.
+#     """
+#     # return auth_views.login(request)
+#     auth_views.LoginView.as_view(template_name='users/login.html')
 
-def logout(request):
-    """
-    Logs a user out - a simple wrapper around the contrib logout view.
-    """
-    return auth_views.logout(request, template_name='users/logged_out.html')
+# def logout(request):
+#     """
+#     Logs a user out - a simple wrapper around the contrib logout view.
+#     """
+#     return auth_views.logout(request, template_name='users/logged_out.html')
 
 LIST_HEADERS = (
     (u'User Name', 'username'),
@@ -88,25 +91,48 @@ LIST_HEADERS = (
     (u'Login',     None),
 )
 
-@login_required
-def user_list(request):
-    """
-    Lists Users.
-    """
-    admin = User.objects.get(userprofile__role=UserProfile.ADMINISTRATOR_ROLE)
-    sort_headers = SortHeaders(request, LIST_HEADERS)
-    users = users_accessible_to_user(request.user) \
-             .select_related() \
-              .order_by(sort_headers.get_order_by())
-    return list_detail.object_list(request, users,
-        paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
-        template_object_name='user', template_name='users/user_list.html',
-        extra_context={
-            'admin': admin,
-            'headers': list(sort_headers.headers()),
-        })
+# @login_required
+# def user_list(request):
+#     """
+#     Lists Users.
+#     """
+#     admin = User.objects.get(userprofile__role=UserProfile.ADMINISTRATOR_ROLE)
+#     sort_headers = SortHeaders(request, LIST_HEADERS)
+#     users = users_accessible_to_user(request.user) \
+#              .select_related() \
+#               .order_by(sort_headers.get_order_by())
+#     return list_detail.object_list(request, users,
+#         paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
+#         template_object_name='user', template_name='users/user_list.html',
+#         extra_context={
+#             'admin': admin,
+#             'headers': list(sort_headers.headers()),
+#         })
 
-@transaction.commit_on_success
+from django.views.generic import list as object_list    #list_detail.object_list
+class UserListView(object_list.ListView):
+    template_object_name='task_type',
+    template_name='task_types/task_type_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(UserListView, self).get_context_data(**kwargs)
+
+        admin = User.objects.get(userprofile__role=UserProfile.ADMINISTRATOR_ROLE)
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        context['admin'] = admin
+        context['headers'] = list(sort_headers.headers())
+        return context
+    def get_queryset(self):
+        admin = User.objects.get(userprofile__role=UserProfile.ADMINISTRATOR_ROLE)
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        users = users_accessible_to_user(self.request.user) \
+                .select_related() \
+                .order_by(sort_headers.get_order_by())
+        return users
+
+
+# @transaction.commit_on_success FIXME
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def add_user(request):
     """
@@ -138,9 +164,9 @@ def add_user(request):
             return HttpResponseRedirect(user.get_absolute_url())
     else:
         form = UserForm()
-    return render_to_response('users/add_user.html', {
+    return render(request, 'users/add_user.html', {
             'form': form,
-        }, RequestContext(request))
+        }, )
 
 @login_required
 def user_detail(request, username):
@@ -148,14 +174,15 @@ def user_detail(request, username):
     Displays a User's details.
     """
     user = get_object_or_404(User, username=username)
-    return render_to_response('users/user_detail.html', {
+    return render(request, 'users/user_detail.html', {
             'user_': user,
-            'profile': user.get_profile(),
+            'profile': user.userprofile,
             'rates': user.rates.order_by('effective_from'),
             'activities': user.assigned_activities.all(),
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def edit_user(request, username):
     """
@@ -163,7 +190,7 @@ def edit_user(request, username):
     edited using this view.
     """
     user = get_object_or_404(User, username=username)
-    profile = user.get_profile()
+    profile = user.userprofile
     if profile.is_admin():
         return HttpResponseForbidden(
             u'The specified User is not editable at this location.')
@@ -209,13 +236,14 @@ def edit_user(request, username):
             'managed_users': [u.id for u in profile.managed_users.all()],
         }
         form = EditUserForm(initial=initial)
-    return render_to_response('users/edit_user.html', {
+    return render(request, 'users/edit_user.html', {
             'form': form,
             'user_': user,
             'profile': profile,
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def edit_user_rates(request, username):
     """
@@ -260,11 +288,11 @@ def edit_user_rates(request, username):
                     editable_rates = True
             else:
                 rates.append((rate, None))
-    return render_to_response('users/edit_user_rates.html', {
+    return render(request, 'users/edit_user_rates.html', {
             'user_': user,
             'rates': rates,
             'editable_rates': editable_rates,
-        }, RequestContext(request))
+        }, )
 
 class UserRateForm(UserRateBaseForm, forms.ModelForm):
     class Meta:
@@ -290,11 +318,11 @@ def add_user_rate(request, username):
                                                 args=(username,)))
     else:
         form = UserRateForm(user)
-    return render_to_response('users/add_user_rate.html', {
+    return render(request, 'users/add_user_rate.html', {
             'form': form,
             'user_': user,
             'rates': user.rates.order_by('effective_from'),
-        }, RequestContext(request))
+        }, )
 
 @user_has_permission(is_admin)
 def edit_admin_user(request):
@@ -319,10 +347,10 @@ def edit_admin_user(request):
         initial = dict([(attr, getattr(admin, attr)) \
                         for attr in editable_attrs])
         form = AdminUserForm(initial=initial)
-    return render_to_response('users/edit_admin_user.html', {
+    return render(request, 'users/edit_admin_user.html', {
             'admin': admin,
             'form': form,
-        }, RequestContext(request))
+        }, )
 
 @user_has_permission(is_admin_or_manager)
 def delete_user(request, username):
@@ -330,7 +358,7 @@ def delete_user(request, username):
     Deletes a User.
     """
     user = get_object_or_404(User, username=username)
-    profile = user.get_profile()
+    profile = user.userprofile
     if profile.is_admin():
         return HttpResponseForbidden(u'The specified User is not deleteable.')
     return create_update.delete_object(request, User,

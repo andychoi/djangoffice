@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Activity Type '{{ activity_type.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "activity_types" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "activity_types" %}{% endblock %}
 {% block content %}
 <h1>Activity Type '{{ activity_type.name|escape }}'</h1>
 
@@ -12,7 +12,7 @@
 <tbody>
 </table>
 <div class="buttons">
-  <a href="{% url edit_activity_type activity_type.id %}"><img src="{{ MEDIA_URL }}img/pencil.png" alt=""> Edit Activity Type</a>
-  {% if activity_type.is_deleteable %}<a href="{% url delete_activity_type activity_type.id %}"><img src="{{ MEDIA_URL }}img/delete.png" alt=""> Delete Activity Type</a>{% endif %}
+  <a href="{% url edit_activity_type activity_type.id %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Activity Type</a>
+  {% if activity_type.is_deleteable %}<a href="{% url delete_activity_type activity_type.id %}"><img src="{% static 'img/delete.png' %}" alt=""> Delete Activity Type</a>{% endif %}
 </div>
 {% endblock %}

@@ -1,7 +1,7 @@
-{% extends "base.html" %}{% load timesheet %}
+{% extends "base.html" %}{% load static timesheet menu %}
 {% block title %}Timesheet | {% endblock %}
 {% block extrahead %}
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectUpdater.js"></script>
+  <script type="text/javascript" src="{% static 'js/SelectUpdater.js' %}"></script>
   <script type="text/javascript">
   var jobToTaskMapping = {{ task_json }};
   Event.onDOMReady(function()
@@ -10,7 +10,9 @@
   });
   </script>
 {% endblock %}
-{% block menu %}{% menu "timesheets" %}{% endblock %}
+
+{% block menu %}{% include_menu "timesheets" %}{% endblock %}
+
 {% block content %}
 <h1>Timesheet</h1>
 <dl>
@@ -42,13 +44,13 @@
   </tr>
 </thead>
 <tbody>
-  {% for entry,form in time_entries %}<tr class="{% cycle odd,even %} {% if not entry.is_editable %}non{% endif %}editable">
+  {% for entry,form in time_entries %}<tr class="{% cycle 'odd' 'even' %} {% if not entry.is_editable %}non{% endif %}editable">
   {% edit_time_entry_row entry form %}
   </tr>{% endfor %}
 </tbody>
 </table>
 <div class="buttons">
-  <a href="{{ timesheet|add_time_entry_url:user_ }}" title="Add a new Time Entry"><img src="{{ MEDIA_URL }}img/time_add.png" alt=""> Add Time Entry</a>
+  <a href="{{ timesheet|add_time_entry_url:user_ }}" title="Add a new Time Entry"><img src="{% static 'img/time_add.png' %}" alt=""> Add Time Entry</a>
 </div>
 {% endif %}
 
@@ -68,19 +70,19 @@
   </tr>
 </thead>
 <tbody>
-  {% for expense,form in expenses %}<tr class="{% cycle odd,even %}">
+  {% for expense,form in expenses %}<tr class="{% cycle 'odd' 'even' %}">
   {% edit_expense_row expense form %}
   </tr>{% endfor %}
 </tbody>
 </table>
 <div class="buttons">
-  <a href="{{ timesheet|add_expense_url:user_ }}" title="Add a new Expense"><img src="{{ MEDIA_URL }}img/coins_add.png" alt=""> Add Expense</a>
+  <a href="{{ timesheet|add_expense_url:user_ }}" title="Add a new Expense"><img src="{% static 'img/coins_add.png' %}" alt=""> Add Expense</a>
 </div>
 
 <div class="buttons">
-  <button type="submit" name="save" class="positive" title="Save changes made to the Timesheet"><img src="{{ MEDIA_URL }}img/calendar_edit.png" alt=""> Save Timesheet</button>
+  <button type="submit" name="save" class="positive" title="Save changes made to the Timesheet"><img src="{% static 'img/calendar_edit.png' %}" alt=""> Save Timesheet</button>
   {% if not user.get_profile.is_user %}
-  <button type="submit" name="approve" class="positive" title="Approve all unapproved Timesheet items"><img src="{{ MEDIA_URL }}img/tick.png" alt=""> Approve All</button>
+  <button type="submit" name="approve" class="positive" title="Approve all unapproved Timesheet items"><img src="{% static 'img/tick.png' %}" alt=""> Approve All</button>
   {% endif %}
 </div>
 </form>

@@ -1,6 +1,6 @@
-{% extends "base.html" %}{% load timesheet %}
+{% extends "base.html" %}{% load static timesheet menu %}
 {% block title %}Delete Time Entry | {% endblock %}
-{% block menu %}{% menu "timesheets" %}{% endblock %}
+{% block menu %}{% include_menu "timesheets" %}{% endblock %}
 {% block content %}
 <h1>Delete Time Entry</h1>
 <form name="timeEntryForm" id="timeEntryForm" action="." method="POST">
@@ -41,8 +41,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="negative"><img src="{{ MEDIA_URL }}img/time_delete.png" alt=""> Delete Time Entry</button>
-  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="negative"><img src="{% static 'img/time_delete.png' %}" alt=""> Delete Time Entry</button>
+  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

@@ -1,5 +1,6 @@
-import md5
-import cPickle as pickle
+from hashlib import md5
+import pickle
+from django.conf import settings
 
 from django import forms
 from django.db.models import Model
@@ -34,7 +35,7 @@ class FilterBaseForm(forms.BaseForm):
         filters = {}
         if self.is_valid():
             for field, filter in self.SEARCH_FILTERS:
-                if self.cleaned_data.has_key(field) and \
+                if field in self.cleaned_data and \
                    self.cleaned_data[field]:
                     if isinstance(self.cleaned_data.get(field), Model):
                         filters[filter] = self.cleaned_data.get(field).pk
@@ -50,7 +51,7 @@ class FilterBaseForm(forms.BaseForm):
         params = {}
         if self.is_valid():
             for field in self.fields.keys():
-                if self.cleaned_data.has_key(field) and \
+                if field in self.cleaned_data  and \
                    self.cleaned_data[field]:
                     if isinstance(self.cleaned_data.get(field), Model):
                         params[field] = self.cleaned_data.get(field).pk

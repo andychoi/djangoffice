@@ -1,7 +1,7 @@
-{% extends "base.html" %}{% load timesheet %}
+{% extends "base.html" %}{% load static timesheet menu %}
 {% block title %}Add Time Entry | {% endblock %}
 {% block extrahead %}
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/SelectUpdater.js"></script>
+  <script type="text/javascript" src="{% static 'js/SelectUpdater.js' %}"></script>
   <script type="text/javascript">
   var jobToTaskMapping = {{ task_json }};
   Event.onDOMReady(function()
@@ -10,7 +10,7 @@
   });
   </script>
 {% endblock %}
-{% block menu %}{% menu "timesheets" %}{% endblock %}
+{% block menu %}{% include_menu "timesheets" %}{% endblock %}
 {% block content %}
 <h1>Add Time Entry</h1>
 <dl>
@@ -50,8 +50,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/time_add.png" alt=""> Add Time Entry</button>
-  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/time_add.png' %}" alt=""> Add Time Entry</button>
+  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

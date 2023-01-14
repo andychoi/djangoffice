@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Logged Out | {% endblock %}
-{% block menu %}{% menu %}{% endblock %}
+{% block menu %}{% include_menu %}{% endblock %}
 {% block content %}
-<h1><img src="{{ MEDIA_URL }}img/door_out.png" alt=""> Logged Out</h1>
+<h1><img src="{% static 'img/door_out.png' %}" alt=""> Logged Out</h1>
 <p>You are now logged out.</p>
 {% endblock %}

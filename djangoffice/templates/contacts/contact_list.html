@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Contacts | {% endblock %}
-{% block menu %}{% menu "manage" "contacts" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "contacts" %}{% endblock %}
 {% block content %}
 <h1>Contacts</h1>
 
@@ -12,7 +12,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for contact in contact_list %}<tr class="{% cycle odd,even %}">
+  {% for contact in contact_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ contact.get_absolute_url }}">{{ contact.full_name|escape }}</a></td>
     <td>{{ contact.company_name|escape }}</td>
   </tr>{% endfor %}
@@ -22,6 +22,6 @@
 <p class="noneyet">No Contacts yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_contact %}"><img src="{{ MEDIA_URL }}img/group_add.png" alt=""> Add Contact</a>
+  <a href="{% url add_contact %}"><img src="{% static 'img/group_add.png' %}" alt=""> Add Contact</a>
 </div>
 {% endblock %}

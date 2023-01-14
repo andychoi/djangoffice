@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Add Activity | {% endblock %}
-{% block menu %}{% menu "activities" %}{% endblock %}
+{% block menu %}{% include_menu "activities" %}{% endblock %}
 {% block content %}
 <h1>Add Activity</h1>
 <form name="activityForm" id="activityForm" action="." method="POST">
@@ -11,8 +11,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/note_add.png" alt=""> Add Activity</button>
-  <a href="{% url activity_list %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</button>
+  <a href="{% url activity_list %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

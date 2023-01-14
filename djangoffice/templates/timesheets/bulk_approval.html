@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Bulk Approval{% if not form %} Results{% endif %} | {% endblock %}
-{% block menu %}{% menu "timesheets" "bulk_approval" %}{% endblock %}
+{% block menu %}{% include_menu "timesheets" "bulk_approval" %}{% endblock %}
 {% block content %}
 <h1>Bulk Approval {% if not form %} Results{% endif %}</h1>
 {% if form %}
@@ -12,8 +12,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/tick.png" alt=""> Bulk Approve</button>
-  <a href="{% url timesheet_index %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/tick.png' %}" alt=""> Bulk Approve</button>
+  <a href="{% url timesheet_index %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% else %}

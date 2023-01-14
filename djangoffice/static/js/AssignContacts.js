@@ -220,7 +220,7 @@ var AssignContacts =
             if (contact.selected == true)
             {
                 var row = TR({"class": (selectedContactCount++ % 2 == 0 ? "odd" : "even")},
-                    TD(IMG({"style": "cursor: pointer;", "src": mediaURL + "img/delete.png", "alt": "Deselect", "title": "Deselect Contact", "onclick": this.deselectContactHandler(contact.id).bind(this)})),
+                    TD(IMG({"style": "cursor: pointer;", "src": mediaURL + "img/delete.png' %}, "alt": "Deselect", "title": "Deselect Contact", "onclick": this.deselectContactHandler(contact.id).bind(this)})),
                     TD((contact.last_name || "") + (contact.first_name != "" ? ", " + (contact.first_name || "") : "")),
                     TD(contact.company_name || ""),
                     TD(contact.position || "")

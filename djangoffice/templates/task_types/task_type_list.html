@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Task Types | {% endblock %}
-{% block menu %}{% menu "manage" "task_types" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "task_types" %}{% endblock %}
 {% block content %}
 <h1>Task Types</h1>
 
@@ -12,7 +12,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for task_type in task_type_list %}<tr class="{% cycle odd,even %}">
+  {% for task_type in task_type_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ task_type.get_absolute_url }}">{{ task_type.name|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
@@ -21,6 +21,6 @@
 <p class="noneyet">No Task Types yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_task_type %}"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Add Task Type</a>
+  <a href="{% url add_task_type %}"><img src="{% static 'img/add.png' %}" alt=""> Add Task Type</a>
 </div>
 {% endblock %}

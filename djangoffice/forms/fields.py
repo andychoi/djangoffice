@@ -3,9 +3,9 @@ from itertools import chain
 
 from django import forms
 from django.core import validators
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.utils.datastructures import MultiValueDict
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_str
 from django.utils.html import escape
 from django.utils.text import capfirst
 from django.utils.safestring import mark_safe
@@ -33,7 +33,7 @@ class DynamicModelChoiceField(forms.Field):
             try:
                 value = self.model._meta.pk.to_python(value)
                 value = self.model._default_manager.get(pk=value)
-            except validators.ValidationError, e:
+            except validators.ValidationError as e:
                 raise forms.ValidationError(e.messages[0])
             except self.model.DoesNotExist:
                 raise forms.ValidationError(
@@ -63,10 +63,10 @@ class DynamicChoice(forms.Widget):
         final_attrs = self.build_attrs(attrs, type='hidden', name=name)
         item = ''
         if value != '':
-            final_attrs['value'] = force_unicode(value)
+            final_attrs['value'] = force_str(value)
             try:
                 instance = self.model._default_manager.get(pk=value)
-                item = escape(force_unicode(self.display_func(instance)))
+                item = escape(force_str(self.display_func(instance)))
             except self.model.DoesNotExist:
                 pass
         display_text = self.display_template % {
@@ -132,7 +132,7 @@ class MultipleDynamicModelChoiceField(forms.ChoiceField):
                 raise forms.ValidationError(
                     u'This field must specify existing %s.' % \
                         capfirst(self.model._meta.verbose_name_plural))
-        except validators.ValidationError, e:
+        except validators.ValidationError as e:
             raise forms.ValidationError(e.messages[0])
         return final_values
 
@@ -164,7 +164,7 @@ class DynamicSelectMultiple(forms.Widget):
         output = [u'<select multiple="multiple"%s>' % flatatt(final_attrs)]
         for option_value, option_label in chain(self.choices, choices):
             output.append(u'<option value="%s" selected="selected">%s</option>' % (
-                escape(force_unicode(option_value)), escape(force_unicode(option_label))))
+                escape(force_str(option_value)), escape(force_str(option_label))))
         output.append(u'</select>')
         return mark_safe(u'\n'.join(output))
 

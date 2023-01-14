@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Edit Invoice {{ invoice.formatted_number }} | {% endblock %}
-{% block menu %}{% menu "invoices" "invoices" %}{% endblock %}
+{% block menu %}{% include_menu "invoices" "invoices" %}{% endblock %}
 {% block content %}
 <h1>Edit Invoice</h1>
 <form name="invoiceForm" id="invoiceForm" action="." method="POST">
@@ -9,8 +9,8 @@
 {{ form }}
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/tick.png" alt=""> Edit Invoice</button>
-  <a href="{{ invoice.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/tick.png' %}" alt=""> Edit Invoice</button>
+  <a href="{{ invoice.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

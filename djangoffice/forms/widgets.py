@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import widgets
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_str
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -63,14 +63,14 @@ class TableSelectMultiple(forms.SelectMultiple):
         has_id = attrs and 'id' in attrs
         final_attrs = self.build_attrs(attrs, name=name)
         output = []
-        str_values = set([force_unicode(v) for v in value]) # Normalize to strings.
+        str_values = set([force_str(v) for v in value]) # Normalize to strings.
         for i, (option_value, item) in enumerate(self.choices):
             # If an ID attribute was given, add a numeric index as a suffix,
             # so that the checkboxes don't all have the same ID attribute.
             if has_id:
                 final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
             cb = forms.CheckboxInput(final_attrs, check_test=lambda value: value in str_values)
-            option_value = force_unicode(option_value)
+            option_value = force_str(option_value)
             rendered_cb = cb.render(name, option_value)
             output.append(u'<tr><td>%s</td>' % rendered_cb)
             for attr in self.item_attrs:

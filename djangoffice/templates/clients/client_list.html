@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Clients | {% endblock %}
-{% block menu %}{% menu "manage" "clients" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "clients" %}{% endblock %}
 {% block content %}
 <h1>Clients</h1>
 
@@ -12,7 +12,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for client in client_list %}<tr class="{% cycle odd,even %}">
+  {% for client in client_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ client.get_absolute_url }}">{{ client.name|escape }}</a></td>
   </tr>{% endfor %}
 </tbody>
@@ -21,6 +21,6 @@
 <p class="noneyet">No Clients yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_client %}"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Add Client</a>
+  <a href="{% url add_client %}"><img src="{% static 'img/add.png' %}" alt=""> Add Client</a>
 </div>
 {% endblock %}

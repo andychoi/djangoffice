@@ -1,6 +1,6 @@
-{% extends "base.html" %}{% load money %}
+{% extends "base.html" %}{% load static menu djangoffice_tags money %}
 {% block title %}Add Rate for {{ user_.get_full_name|escape }} | {% endblock %}
-{% block menu %}{% menu "manage" "users" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "users" %}{% endblock %}
 {% block content %}
 <h1>Add Rate for {{ user_.get_full_name|escape }}</h1>
 
@@ -12,8 +12,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/coins_add.png" alt=""> Add Rate</button>
-  <a href="{% url edit_user_rates user_.username %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/coins_add.png' %}" alt=""> Add Rate</button>
+  <a href="{% url edit_user_rates user_.username %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 
@@ -28,7 +28,7 @@
 </tr>
 </thead>
 <tbody>
-{% for rate in rates %}<tr class="{% cycle odd,even %}">
+{% for rate in rates %}<tr class="{% cycle 'odd' 'even' %}">
   <td>{{ rate.effective_from }}</td>
   <td>{{ rate.standard_rate|money }}</td>
   <td>{{ rate.overtime_rate|money }}</td>

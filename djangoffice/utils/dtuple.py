@@ -145,7 +145,7 @@ class DatabaseTuple:
   def __setattr__(self, name, value):
     'Simulate attribute-access via column names'
     ### need to redirect into a db update
-    raise TypeError, "can't assign to this subscripted object"
+    raise TypeError("can't assign to this subscripted object")
 
   def __getitem__(self, key):
     'Simulate indexed (tuple/list) and mapping-style access'
@@ -157,9 +157,9 @@ class DatabaseTuple:
     'Simulate indexed (tuple/list) and mapping-style access'
     if type(key) == type(1):
       ### need to redirect into a db update of elem #key
-      raise TypeError, "can't assign to this subscripted object"
+      raise TypeError("can't assign to this subscripted object")
     ### need to redirect into a db update of elem named key
-    raise TypeError, "can't assign to this subscripted object"
+    raise TypeError("can't assign to this subscripted object")
 
   def __len__(self):
     return len(self._data_)
@@ -171,7 +171,7 @@ class DatabaseTuple:
   def __setslice__(self, i, j, list):
     'Simulate list/tuple slicing access'
     ### need to redirect into a db update of elems
-    raise TypeError, "can't assign to this subscripted object"
+    raise TypeError("can't assign to this subscripted object")
 
   def _keys_(self):
     "Simulate mapping's methods"

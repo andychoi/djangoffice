@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Contact '{{ contact.full_name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "contacts" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "contacts" %}{% endblock %}
 {% block content %}
 <h1>Contact '{{ contact.full_name|escape }}'</h1>
 
@@ -10,8 +10,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <a href="{% url edit_contact contact.id %}"><img src="{{ MEDIA_URL }}img/group_edit.png" alt=""> Edit Contact</a>
-  {% if contact.is_deleteable %}<a href="{% url delete_contact contact.id %}"><img src="{{ MEDIA_URL }}img/group_delete.png" alt=""> Delete Contact</a>{% endif %}
+  <a href="{% url edit_contact contact.id %}"><img src="{% static 'img/group_edit.png' %}" alt=""> Edit Contact</a>
+  {% if contact.is_deleteable %}<a href="{% url delete_contact contact.id %}"><img src="{% static 'img/group_delete.png' %}" alt=""> Delete Contact</a>{% endif %}
 </div>
 
 <h2>Activities</h2>
@@ -29,7 +29,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for activity in activities %}<tr class="{% cycle odd,even %}">
+  {% for activity in activities %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ activity.get_absolute_url }}">{{ activity.formatted_number }}</a></td>
     <td><a href="{{ activity.job.get_absolute_url }}">{{ activity.job|escape }}</a></td>
     <td>{{ activity.type|default:"-"|escape }}</a></td>
@@ -44,6 +44,6 @@
 <p>No Activities yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_activity %}?contact={{ contact.id }}"><img src="{{ MEDIA_URL }}img/note_add.png" alt=""> Add Activity</a>
+  <a href="{% url add_activity %}?contact={{ contact.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
 </div>
 {% endblock %}

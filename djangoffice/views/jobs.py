@@ -5,9 +5,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
-from django.views.generic import list_detail
+# from django.views.generic import list_detail
+from django.views.generic import ListView
+from django.views.generic.detail import DetailView
+
 
 from djangoffice.auth import is_admin, is_admin_or_manager, user_has_permission
 from djangoffice.forms.jobs import (AddJobForm, AddTaskForm, EditJobForm,
@@ -42,24 +45,42 @@ def filter_jobs(request):
 
     return jobs, filter_form, sort_headers
 
-@login_required
-def job_list(request):
-    """
-    Lists Jobs, which are always filtered based on system settings and
-    the logged-in User's role.
+# @login_required
+# def job_list(request):
+#     """
+#     Lists Jobs, which are always filtered based on system settings and
+#     the logged-in User's role.
 
-    Jobs listed may be further filtered based on a number of criteria.
-    """
-    jobs, filter_form, sort_headers = filter_jobs(request)
-    return list_detail.object_list(request, jobs,
-        paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
-        template_object_name='job', template_name='jobs/job_list.html',
-        extra_context={
-            'filter_form': filter_form,
-            'headers': list(sort_headers.headers()),
-        })
+#     Jobs listed may be further filtered based on a number of criteria.
+#     """
+#     jobs, filter_form, sort_headers = filter_jobs(request)
+#     return list_detail.object_list(request, jobs,
+#         paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
+#         template_object_name='job', template_name='jobs/job_list.html',
+#         extra_context={
+#             'filter_form': filter_form,
+#             'headers': list(sort_headers.headers()),
+#         })
 
-@transaction.commit_on_success
+from django.views.generic import list as object_list    #list_detail.object_list
+class JobListView(object_list.ListView):
+    template_object_name='job',
+    template_name='jobs/job_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(JobListView, self).get_context_data(**kwargs)
+
+        jobs, filter_form, sort_headers = filter_jobs(self.request)
+        context['filter_form'] = filter_form
+        context['headers'] = list(sort_headers.headers())
+        return context
+    def get_queryset(self):
+        jobs, filter_form, sort_headers = filter_jobs(self.request)
+        return jobs
+
+
+# @transaction.commit_on_success
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def add_job(request):
     """
@@ -107,10 +128,10 @@ def add_job(request):
         job_form = AddJobForm(users)
         task_forms = [AddTaskForm(task_type, user_choices) \
                       for task_type in task_types]
-    return render_to_response('jobs/add_job.html', {
+    return render(request, 'jobs/add_job.html', {
             'job_form': job_form,
             'task_forms': task_forms,
-        }, RequestContext(request))
+        }, )
 
 @login_required
 def job_detail(request, job_number):
@@ -122,16 +143,17 @@ def job_detail(request, job_number):
     except Job.DoesNotExist:
         raise Http404(u'No %s matches the given query.' \
                       % Job._meta.verbose_name)
-    return render_to_response('jobs/job_detail.html', {
+    return render(request, 'jobs/job_detail.html', {
             'job': job,
             'job_contacts': job.job_contacts.all(),
             'activities': job.activities.all(),
             'tasks': job.tasks.all(),
             'invoices': job.invoices.all(),
             'artifacts': job.artifacts.all(),
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @login_required
 def edit_job(request, job_number):
     """
@@ -188,12 +210,12 @@ def edit_job(request, job_number):
         task_forms = [EditTaskForm(task, user_choices) for task in tasks]
         new_task_forms = [AddTaskForm(task_type, user_choices) \
                           for task_type in task_types]
-    return render_to_response('jobs/edit_job.html', {
+    return render(request, 'jobs/edit_job.html', {
             'job': job,
             'job_form': job_form,
             'task_forms': task_forms,
             'new_task_forms': new_task_forms,
-        }, RequestContext(request))
+        }, )
 
 @user_has_permission(is_admin_or_manager)
 def delete_job(request, job_number):

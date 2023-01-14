@@ -1,18 +1,23 @@
 import datetime
 import re
 from decimal import Decimal
-
+from django.urls import reverse
 import dbsettings
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import connection, models
-from django.utils.text import truncate_words
-from django.utils.encoding import smart_unicode
+from django.utils.text import Truncator
+import django
+from django.utils.encoding import smart_str
+django.utils.encoding.smart_text = smart_str
 
 from djangoffice.validators import isSafeishQuery, isWeekCommencingDate
 
 qn = connection.ops.quote_name
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 ###########
 # Options #
@@ -64,7 +69,7 @@ class UserProfile(models.Model):
         (ADMINISTRATOR_ROLE, u'Administrator'),
     )
 
-    user           = models.ForeignKey(User, unique=True)
+    user           = models.OneToOneField(User, unique=True, on_delete=models.CASCADE)
     role           = models.CharField(max_length=1, choices=ROLE_CHOICES)
     managed_users  = models.ManyToManyField(User, null=True, blank=True, related_name='managers')
     phone_number   = models.CharField(max_length=20, blank=True)
@@ -96,6 +101,12 @@ class UserProfile(models.Model):
     def is_user(self):
         return self.role == self.USER_ROLE
 
+@receiver(post_save, sender=User)
+def update_profile_signal(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+    instance.userprofile.save()
+
 class UserRateManager(models.Manager):
     def get_latest_effective_from_for_user(self, user):
         """
@@ -103,7 +114,7 @@ class UserRateManager(models.Manager):
         given User, or ``None`` if no rates exist.
         """
         try:
-            return super(UserRateManager, self).get_query_set() \
+            return super().get_queryset() \
                     .filter(user=user) \
                      .order_by('-effective_from')[0].effective_from
         except IndexError:
@@ -113,7 +124,7 @@ class UserRate(models.Model):
     """
     User rates by date.
     """
-    user           = models.ForeignKey(User, related_name='rates')
+    user           = models.ForeignKey(User, related_name='rates', on_delete=models.CASCADE)
     effective_from = models.DateField()
     standard_rate  = models.DecimalField(max_digits=6, decimal_places=2)
     overtime_rate  = models.DecimalField(max_digits=6, decimal_places=2)
@@ -142,7 +153,7 @@ class Vacation(models.Model):
     """
     A vacation record defining a User's entitlement for a given year.
     """
-    user        = models.ForeignKey(User, related_name='vacations')
+    user        = models.ForeignKey(User, related_name='vacations', on_delete=models.CASCADE)
     year        = models.PositiveIntegerField()
     entitlement = models.DecimalField(max_digits=5, decimal_places=2)
     carry_over  = models.DecimalField(max_digits=5, decimal_places=2, default='0.00')
@@ -237,9 +248,8 @@ class Contact(models.Model):
                self.clients.count() == 0 and \
                self.activities.count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('contact_detail', (smart_unicode(self.id),))
+        return reverse('contact_detail', args=(smart_text(self.id),))
 
 class Client(models.Model):
     """
@@ -269,9 +279,8 @@ class Client(models.Model):
         # contacts filter_interface=models.HORIZONTAL
         list_display = ('name', 'notes', 'disabled')
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('client_detail', (smart_unicode(self.id),))
+        return reverse('client_detail', args=(smart_text(self.id),))
 
 ########
 # Jobs #
@@ -285,7 +294,7 @@ class TaskTypeManager(models.Manager):
         """
         opts = self.model._meta
         task_opts = Task._meta
-        return super(TaskTypeManager, self).get_query_set().extra(
+        return super().get_queryset().extra(    # FIXME TaskTypeManager, self
             where=['%s.%s NOT IN (SELECT %s FROM %s WHERE %s = %%s)' % (
                qn(opts.db_table), qn(opts.pk.column),
                qn(task_opts.get_field('task_type').column),
@@ -302,7 +311,7 @@ class TaskTypeManager(models.Manager):
         """
         opts = self.model._meta
         task_opts = Task._meta
-        return super(TaskTypeManager, self).get_query_set().extra(
+        return super().get_queryset().extra(    # TaskTypeManager, self
             where=['%s.%s NOT IN (SELECT %s FROM %s WHERE %s IN (%%s, %%s))' % (
                qn(opts.db_table), qn(opts.pk.column),
                qn(task_opts.get_field('task_type').column),
@@ -338,9 +347,8 @@ class TaskType(models.Model):
         """
         return self.tasks.count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('task_type_detail', (smart_unicode(self.id),))
+        return reverse('task_type_detail', args=(smart_text(self.id),))
 
 class TaskTypeRateManager(models.Manager):
     def get_latest_effective_from_for_task_type(self, task_type):
@@ -348,10 +356,8 @@ class TaskTypeRateManager(models.Manager):
         Returns the latest "effective from" date held by a rate for the
         given Task Type, or ``None`` if no rates exist.
         """
-        try:
-            return super(TaskTypeRateManager, self).get_query_set() \
-                    .filter(task_type=task_type) \
-                     .order_by('-effective_from')[0].effective_from
+        try:    # TaskTypeRateManager, self
+            return super().get_queryset().filter(task_type=task_type).order_by('-effective_from')[0].effective_from
         except IndexError:
             return None
 
@@ -359,7 +365,7 @@ class TaskTypeRate(models.Model):
     """
     Rates by date for a given type of work.
     """
-    task_type      = models.ForeignKey(TaskType, related_name='rates')
+    task_type      = models.ForeignKey(TaskType, related_name='rates', on_delete=models.CASCADE)
     effective_from = models.DateField()
     standard_rate  = models.DecimalField(max_digits=6, decimal_places=2)
     overtime_rate  = models.DecimalField(max_digits=6, decimal_places=2)
@@ -423,9 +429,9 @@ class JobManager(models.Manager):
         Job exists purely to track vacations and other "internal"
         time.
         """
-        profile = user.get_profile()
+        profile = user.userprofile
         qs = super(JobManager, self) \
-              .get_query_set() \
+              .get_queryset() \
                .exclude(pk=settings.ADMIN_JOB_ID)
         if profile.is_manager() and not access.managers_view_all_jobs or \
            (profile.is_pm() or profile.is_user()) and not access.users_view_all_jobs:
@@ -452,12 +458,10 @@ class JobManager(models.Manager):
                 params=[user.id],
             )
 
-            if profile.is_manager():
-                qs = qs | super(JobManager, self).get_query_set() \
-                                                  .filter(director_id=user.pk)
+            if profile.is_manager():    #JobManager, self
+                qs = qs | super().get_queryset().filter(director_id=user.pk)
             elif profile.is_pm():
-                qs = qs | super(JobManager, self).get_query_set() \
-                                                  .filter(project_manager_id=user.pk)
+                qs = qs | super().get_queryset().filter(project_manager_id=user.pk)
         return qs
 
 class Job(models.Model):
@@ -496,7 +500,7 @@ class Job(models.Model):
         (EURO_CURRENCY, u'Euro'),
     )
 
-    client             = models.ForeignKey(Client, related_name='jobs')
+    client             = models.ForeignKey(Client, related_name='jobs', on_delete=models.CASCADE)
     name               = models.CharField(max_length=100)
     number             = models.PositiveIntegerField(unique=True)
     reference          = models.CharField(max_length=16, blank=True)
@@ -509,14 +513,14 @@ class Job(models.Model):
     contingency        = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     # Users
-    director            = models.ForeignKey(User, related_name='directed_jobs')
-    project_coordinator = models.ForeignKey(User, null=True, blank=True, related_name='coordinated_jobs')
-    project_manager     = models.ForeignKey(User, related_name='managed_jobs')
-    architect           = models.ForeignKey(User, related_name='architected_jobs')
+    director            = models.ForeignKey(User, related_name='directed_jobs', on_delete=models.CASCADE)
+    project_coordinator = models.ForeignKey(User, null=True, blank=True, related_name='coordinated_jobs', on_delete=models.CASCADE)
+    project_manager     = models.ForeignKey(User, related_name='managed_jobs', on_delete=models.CASCADE)
+    architect           = models.ForeignKey(User, related_name='architected_jobs', on_delete=models.CASCADE)
 
     # Contacts
-    primary_contact = models.ForeignKey(Contact, related_name='primary_contact_jobs')
-    billing_contact = models.ForeignKey(Contact, related_name='billing_contact_jobs')
+    primary_contact = models.ForeignKey(Contact, related_name='primary_contact_jobs', on_delete=models.CASCADE)
+    billing_contact = models.ForeignKey(Contact, related_name='billing_contact_jobs', on_delete=models.CASCADE)
     job_contacts    = models.ManyToManyField(Contact, null=True, blank=True, related_name='job_contact_jobs')
 
     # Dates
@@ -580,9 +584,14 @@ class Job(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_at = datetime.datetime.now()
-        if not self.number:
-            self.number = self._default_manager.get_next_free_number()
+        # if not self.number:
+        #     self.number = self._default_manager.get_next_free_number()
         super(Job, self).save(*args, **kwargs)
+        self.update_model()
+
+    def update_model(self):
+        test_id = Job.objects.get(number=self.number).id
+        Job.objects.filter(id=test_id).update(number=test_id)
 
     @property
     def formatted_number(self):
@@ -617,13 +626,13 @@ class Job(models.Model):
                self.expenses.count() == 0 and \
                self.tasks.filter(time_entries__id__isnull=False).count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('job_detail', (self.formatted_number,))
+        return reverse('job_detail', args=(self.formatted_number,))
 
 class TaskOptions(dbsettings.Group):
     vacation_task_id = dbsettings.PositiveIntegerValue(u'Vacation Task id')
 
+# https://docs.djangoproject.com/en/4.1/topics/db/managers/
 class TaskManager(models.Manager):
     def with_task_type_name(self):
         """
@@ -633,7 +642,7 @@ class TaskManager(models.Manager):
         opts = self.model._meta
         task_type_opts = TaskType._meta
         task_type_table = qn(task_type_opts.db_table)
-        return super(TaskManager, self).get_query_set().extra(
+        return self.get_queryset().extra(
             select={
                 'task_type_name': '%s.%s' % (
                     task_type_table,
@@ -664,14 +673,14 @@ class Task(models.Model):
 
     Each Task may have a number of Users assigned to work on it.
     """
-    job                  = models.ForeignKey(Job, related_name='tasks')
-    task_type            = models.ForeignKey(TaskType, related_name='tasks')
+    job                  = models.ForeignKey(Job, related_name='tasks', on_delete=models.CASCADE)
+    task_type            = models.ForeignKey(TaskType, related_name='tasks', on_delete=models.CASCADE)
     estimate_hours       = models.DecimalField(max_digits=6, decimal_places=2)
     assigned_users       = models.ManyToManyField(User, related_name='tasks', help_text=u'These users will be able to book time against this task.')
     start_date           = models.DateField(null=True, blank=True)
     end_date             = models.DateField(null=True, blank=True)
     remaining            = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    remaining_overridden = models.BooleanField(help_text=u'This field indicates whether or not the Task\'s remaining field has been overridden by a user.')
+    remaining_overridden = models.BooleanField(help_text=u'This field indicates whether or not the Task\'s remaining field has been overridden by a user.', null=True)
 
     options = TaskOptions()
     objects = TaskManager()
@@ -725,9 +734,8 @@ class ArtifactType(models.Model):
         """
         return self.artifacts.count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('artifact_type_detail', (smart_unicode(self.id),))
+        return reverse('artifact_type_detail', args=(smart_text(self.id),))
 
 class ArtifactManager(models.Manager):
     def accessible_to_user(self, user):
@@ -735,8 +743,8 @@ class ArtifactManager(models.Manager):
         Creates a ``QuerySet`` containing Artifacts accessible by the
         given User based on their role.
         """
-        user_profile = user.get_profile()
-        qs = super(ArtifactManager, self).get_query_set()
+        user_profile = user.userprofile
+        qs = super().get_queryset() #ArtifactManager, self
         if user_profile.is_manager():
             qs = qs.filter(access__in=[UserProfile.MANAGER_ROLE, UserProfile.PM_ROLE, UserProfile.USER_ROLE])
         elif user_profile.is_pm():
@@ -750,9 +758,9 @@ class Artifact(models.Model):
     A file related to a particular Job, access to which may be
     restricted based on a User's role.
     """
-    job         = models.ForeignKey(Job, related_name='artifacts')
+    job         = models.ForeignKey(Job, related_name='artifacts', on_delete=models.CASCADE)
     file        = models.FileField(upload_to='artifacts')
-    type        = models.ForeignKey(ArtifactType, null=True, blank=True, related_name='artifacts')
+    type        = models.ForeignKey(ArtifactType, null=True, blank=True, related_name='artifacts', on_delete=models.CASCADE)
     description = models.CharField(max_length=100)
     created_at  = models.DateTimeField(editable=False)
     updated_at  = models.DateTimeField(editable=False)
@@ -813,9 +821,8 @@ class ActivityType(models.Model):
         """
         return self.activities.count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('activity_type_detail', (smart_unicode(self.pk),))
+        return reverse('activity_type_detail', args=(smart_text(self.pk),))
 
 class Activity(models.Model):
     """
@@ -833,14 +840,14 @@ class Activity(models.Model):
         (TOP_PRIORITY, u'Top'),
     )
 
-    job         = models.ForeignKey(Job, related_name='activities')
-    type        = models.ForeignKey(ActivityType, null=True, blank=True, related_name='activities')
-    created_by  = models.ForeignKey(User, related_name='created_activities')
+    job         = models.ForeignKey(Job, related_name='activities', on_delete=models.CASCADE)
+    type        = models.ForeignKey(ActivityType, null=True, blank=True, related_name='activities', on_delete=models.CASCADE)
+    created_by  = models.ForeignKey(User, related_name='created_activities', on_delete=models.CASCADE)
     created_at  = models.DateTimeField(editable=False)
     description = models.TextField()
     priority    = models.CharField(max_length=1, choices=PRIORITY_CHOICES)
-    assigned_to = models.ForeignKey(User, null=True, blank=True, related_name='assigned_activities', verbose_name='User')
-    contact     = models.ForeignKey(Contact, null=True, blank=True, related_name='activities')
+    assigned_to = models.ForeignKey(User, null=True, blank=True, related_name='assigned_activities', verbose_name='User', on_delete=models.CASCADE)
+    contact     = models.ForeignKey(Contact, null=True, blank=True, related_name='activities', on_delete=models.CASCADE)
     due_date    = models.DateField(null=True, blank=True)
 
     # Completion
@@ -848,7 +855,7 @@ class Activity(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True, editable=False)
 
     def __unicode__(self):
-        return u'%s - %s' % (self.job, truncate_words(self.description, 50))
+        return u'%s - %s' % (self.job, Truncator(self.description).words(50))
 
     class Meta:
         ordering = ['-created_at']
@@ -892,9 +899,8 @@ class Activity(models.Model):
     def formatted_number(self):
         return u'%05d' % (self.id,)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('activity_detail', (smart_unicode(self.id),))
+        return reverse('activity_detail', args=(smart_text(self.id),))
 
 ############
 # Invoices #
@@ -925,7 +931,7 @@ class InvoiceManager(models.Manager):
         job_table = qn(job_opts.db_table)
         client_table = qn(client_opts.db_table)
         contact_table = qn(contact_opts.db_table)
-        return super(InvoiceManager, self).get_query_set().extra(
+        return super().get_queryset().extra(    #InvoiceManager, self
             select={
                 'job_number': '%s.%s' % (job_table, qn(job_opts.get_field('number').column)),
                 'job_name': '%s.%s' % (job_table, qn(job_opts.get_field('name').column)),
@@ -991,7 +997,7 @@ class Invoice(models.Model):
         (WHOLE_JOB_TYPE, u'Whole Job'),
     )
 
-    job             = models.ForeignKey(Job,related_name='invoices')
+    job             = models.ForeignKey(Job,related_name='invoices', on_delete=models.CASCADE)
     number          = models.PositiveIntegerField(unique=True)
     date            = models.DateField(editable=False)
     type            = models.CharField(max_length=1, choices=TYPE_CHOICES)
@@ -1007,7 +1013,7 @@ class Invoice(models.Model):
     objects = InvoiceManager()
 
     def __unicode__(self):
-        return u'Invoice #%s' % smart_unicode(self.number)
+        return u'Invoice #%s' % smart_text(self.number)
 
     class Meta:
        verbose_name = 'Invoice'
@@ -1037,9 +1043,8 @@ class Invoice(models.Model):
     def formatted_number(self):
         return u'%05d' % (self.number,)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('invoice_detail', (self.formatted_number,))
+        return reverse('invoice_detail', args=(self.formatted_number,))
 
 ##############
 # Timesheets #
@@ -1064,7 +1069,7 @@ class Timesheet(models.Model):
     """
     A record of a User's time entries and expenses for a given week.
     """
-    user            = models.ForeignKey(User, related_name='timesheets')
+    user            = models.ForeignKey(User, related_name='timesheets', on_delete=models.CASCADE)
     week_commencing = models.DateField(validators=[isWeekCommencingDate])
 
     options = TimesheetOptions()
@@ -1092,9 +1097,8 @@ class Timesheet(models.Model):
         return [user is not None and user.username or self.user.username] + \
                self.week_commencing.strftime('%Y/%m/%d').split('/')
 
-    @models.permalink
     def get_absolute_url(self, user=None):
-        return ('edit_timesheet', tuple(self.url_parts(user)))
+        return reverse('edit_timesheet', args=tuple(self.url_parts(user)))
 
     def approve(self, user):
         """
@@ -1147,7 +1151,7 @@ class TimeEntryManager(models.Manager):
         task_table = qn(task_opts.db_table)
         task_type_table = qn(task_type_opts.db_table)
         job_table = qn(job_opts.db_table)
-        return super(TimeEntryManager, self).get_query_set().filter(timesheet=timesheet).extra(
+        return self.get_queryset().filter(timesheet=timesheet).extra(   #super(TimeEntryManager, self)
             select={
                 'job_id': '%s.%s' % (task_table, qn(task_opts.get_field('job').column)),
                 'job_number': '%s.%s' % (job_table, qn(job_opts.get_field('number').column)),
@@ -1218,8 +1222,9 @@ class TimeEntryManager(models.Manager):
         Creates a ``QuerySet`` containing all Time Entries booked
         against Tasks for the given Job.
         """
-        return super(TimeEntryManager, self) \
-                .get_query_set() \
+        #TimeEntryManager, self
+        return super() \
+                .get_queryset() \
                  .filter(task__job=job) \
                   .select_related()
 
@@ -1257,9 +1262,9 @@ class TimeEntry(models.Model):
     """
     TIME_ATTRS = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'overtime')
 
-    timesheet       = models.ForeignKey(Timesheet, related_name='time_entries')
-    user            = models.ForeignKey(User, related_name='time_entries')
-    task            = models.ForeignKey(Task, related_name='time_entries')
+    timesheet       = models.ForeignKey(Timesheet, related_name='time_entries', on_delete=models.CASCADE)
+    user            = models.ForeignKey(User, related_name='time_entries', on_delete=models.CASCADE)
+    task            = models.ForeignKey(Task, related_name='time_entries', on_delete=models.CASCADE)
     week_commencing = models.DateField(validators=[isWeekCommencingDate])
     mon             = models.DecimalField(max_digits=4, decimal_places=2, blank=True)
     tue             = models.DecimalField(max_digits=4, decimal_places=2, blank=True)
@@ -1273,8 +1278,8 @@ class TimeEntry(models.Model):
     billable        = models.BooleanField(default=True)
 
     # Administration
-    approved_by = models.ForeignKey(User, null=True, blank=True, related_name='approved_time_entries')
-    invoice     = models.ForeignKey(Invoice, null=True, blank=True, related_name='time_entries')
+    approved_by = models.ForeignKey(User, null=True, blank=True, related_name='approved_time_entries', on_delete=models.CASCADE)
+    invoice     = models.ForeignKey(Invoice, null=True, blank=True, related_name='time_entries', on_delete=models.CASCADE)
 
     objects = TimeEntryManager()
 
@@ -1357,9 +1362,8 @@ class ExpenseType(models.Model):
         """
         return self.expenses.count() == 0
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('expense_type_detail', (smart_unicode(self.id),))
+        return reverse('expense_type_detail', args=(smart_text(self.id),))
 
 class ExpenseManager(models.Manager):
     def for_timesheet(self, timesheet):
@@ -1374,7 +1378,7 @@ class ExpenseManager(models.Manager):
         expense_type_opts = ExpenseType._meta
         job_table = qn(job_opts.db_table)
         expense_type_table = qn(expense_type_opts.db_table)
-        return super(ExpenseManager, self).get_query_set().filter(timesheet=timesheet).extra(
+        return self.get_queryset().filter(timesheet=timesheet).extra(   #super(ExpenseManager, self)
             select={
                 'job_number': '%s.%s' % (job_table, qn(job_opts.get_field('number').column)),
                 'job_name': '%s.%s' % (job_table, qn(job_opts.get_field('name').column)),
@@ -1422,18 +1426,18 @@ class Expense(models.Model):
     """
     An expense incurred while working on a Job.
     """
-    timesheet   = models.ForeignKey(Timesheet, related_name='expenses')
-    user        = models.ForeignKey(User, related_name='expenses')
-    job         = models.ForeignKey(Job, related_name='expenses')
-    type        = models.ForeignKey(ExpenseType, related_name='expenses')
+    timesheet   = models.ForeignKey(Timesheet, related_name='expenses', on_delete=models.CASCADE)
+    user        = models.ForeignKey(User, related_name='expenses', on_delete=models.CASCADE)
+    job         = models.ForeignKey(Job, related_name='expenses', on_delete=models.CASCADE)
+    type        = models.ForeignKey(ExpenseType, related_name='expenses', on_delete=models.CASCADE)
     date        = models.DateField()
     amount      = models.DecimalField(max_digits=8, decimal_places=2)
     description = models.CharField(max_length=100, blank=True)
     billable    = models.BooleanField(default=True)
 
     # Administration
-    approved_by = models.ForeignKey(User, null=True, blank=True, related_name='approved_expenses')
-    invoice     = models.ForeignKey(Invoice, null=True, blank=True, related_name='expenses')
+    approved_by = models.ForeignKey(User, null=True, blank=True, related_name='approved_expenses', on_delete=models.CASCADE)
+    invoice     = models.ForeignKey(Invoice, null=True, blank=True, related_name='expenses', on_delete=models.CASCADE)
 
     objects = ExpenseManager()
 
@@ -1472,8 +1476,8 @@ class SQLReportManager(models.Manager):
         Creates a ``QuerySet`` containing SQL Reports the given User may
         access based on their role.
         """
-        user_profile = user.get_profile()
-        qs = super(SQLReportManager, self).get_query_set()
+        user_profile = user.userprofile
+        qs = super().get_queryset() #SQLReportManager, self
         if user_profile.is_admin():
             pass
         elif user_profile.is_manager():
@@ -1506,9 +1510,8 @@ class SQLReport(models.Model):
         list_display = ('name', 'access')
         list_filter = ('access',)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('sql_report_detail', (smart_unicode(self.id),))
+        return reverse('sql_report_detail', args=(smart_text(self.id),))
 
     def get_sql_parameters(self):
         return set(self.SQL_PARAM_RE.findall(self.query))

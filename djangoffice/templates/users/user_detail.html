@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}User '{{ user_.get_full_name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "users" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "users" %}{% endblock %}
 {% block content %}
 <h1>User '{{ user_.get_full_name|escape }}'</h1>
 
@@ -27,8 +27,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <a href="{% if profile.is_admin %}{% url edit_admin_user %}{% else %}{% url edit_user user_.username %}{% endif %}"><img src="{{ MEDIA_URL }}img/user_edit.png" alt=""> Edit User</a>
-  {% if not profile.is_admin %}<a href="{% url delete_user user_.username %}"><img src="{{ MEDIA_URL }}img/user_delete.png" alt=""> Delete User</a>{% endif %}
+  <a href="{% if profile.is_admin %}{% url edit_admin_user %}{% else %}{% url edit_user user_.username %}{% endif %}"><img src="{% static 'img/user_edit.png' %}" alt=""> Edit User</a>
+  {% if not profile.is_admin %}<a href="{% url delete_user user_.username %}"><img src="{% static 'img/user_delete.png' %}" alt=""> Delete User</a>{% endif %}
 </div>
 
 {% if not profile.is_admin %}
@@ -43,7 +43,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for rate in rates %}<tr class="{% cycle odd,even %}">
+  {% for rate in rates %}<tr class="{% cycle 'odd' 'even' %}">
     <td>{{ rate.effective_from }}</td>
     <td>{{ rate.standard_rate }}</td>
     <td>{{ rate.overtime_rate }}</td>
@@ -54,7 +54,7 @@
 <p>No Rates yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url edit_user_rates user_.username %}"><img src="{{ MEDIA_URL }}img/coins.png" alt=""> Manage Rates</a>
+  <a href="{% url edit_user_rates user_.username %}"><img src="{% static 'img/coins.png' %}" alt=""> Manage Rates</a>
 </div>
 {% endif %}
 
@@ -73,7 +73,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for activity in activities %}<tr class="{% cycle odd,even %}">
+  {% for activity in activities %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ activity.get_absolute_url }}">{{ activity.formatted_number }}</a></td>
     <td><a href="{{ activity.job.get_absolute_url }}">{{ activity.job|escape }}</a></td>
     <td>{{ activity.type|default:"-"|escape }}</td>
@@ -88,6 +88,6 @@
 <p>No Activities yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_activity %}?assigned_to={{ user_.id }}"><img src="{{ MEDIA_URL }}img/note_add.png" alt=""> Add Activity</a>
+  <a href="{% url add_activity %}?assigned_to={{ user_.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
 </div>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Artifacts for Job {{ job.formatted_number }} - {{ job.name|escape }} | {% endblock %}
-{% block menu %}{% menu "manage" "jobs" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "jobs" %}{% endblock %}
 {% block content %}
 <h1>Artifacts for Job {{ job.formatted_number }} - {{ job.name|escape }}</h1>
 
@@ -12,7 +12,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for artifact in artifact_list %}<tr class="{% cycle odd,even %}">
+  {% for artifact in artifact_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{% url artifact_detail job.formatted_number,artifact.id %}">{{ artifact.description|escape }}</a></td>
     <td>{{ artifact.type|default:"-"|escape }}</a></td>
     <td>{{ artifact.file|escape }}</td>
@@ -28,6 +28,6 @@
 <p class="noneyet">No Artifacts yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_artifact job.formatted_number %}"><img src="{{ MEDIA_URL }}img/attach.png" alt=""> Add Artifact</a>
+  <a href="{% url add_artifact job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
 </div>
 {% endblock %}

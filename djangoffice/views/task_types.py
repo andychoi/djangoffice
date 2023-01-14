@@ -1,12 +1,13 @@
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
-from django.views.generic import create_update, list_detail
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
 
 from djangoffice.auth import is_admin_or_manager, user_has_permission
 from djangoffice.forms.rates import EditRateForm, TaskTypeRateBaseForm
@@ -18,19 +19,34 @@ LIST_HEADERS = (
     (u'Task Type', 'name'),
 )
 
-@user_has_permission(is_admin_or_manager)
-def task_type_list(request):
-    """
-    Lists Task Types.
-    """
-    sort_headers = SortHeaders(request, LIST_HEADERS)
-    return list_detail.object_list(request,
-        TaskType.objects.non_admin().order_by(sort_headers.get_order_by()),
-        paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
-        template_object_name='task_type',
-        template_name='task_types/task_type_list.html', extra_context={
-            'headers': list(sort_headers.headers()),
-        })
+# @user_has_permission(is_admin_or_manager)
+# def task_type_list(request):
+#     """
+#     Lists Task Types.
+#     """
+#     sort_headers = SortHeaders(request, LIST_HEADERS)
+#     return list_detail.object_list(request,
+#         TaskType.objects.non_admin().order_by(sort_headers.get_order_by()),
+#         paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
+#         template_object_name='task_type',
+#         template_name='task_types/task_type_list.html', extra_context={
+#             'headers': list(sort_headers.headers()),
+#         })
+
+from django.views.generic import list as object_list    #list_detail.object_list
+class TaskTypeListView(object_list.ListView):
+    template_object_name='task_type',
+    template_name='task_types/task_type_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(TaskTypeListView, self).get_context_data(**kwargs)
+
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        context['headers'] = list(sort_headers.headers())
+        return context
+    def get_queryset(self):
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        return TaskType.objects.non_admin().order_by(sort_headers.get_order_by())
 
 @user_has_permission(is_admin_or_manager)
 def add_task_type(request):
@@ -46,10 +62,10 @@ def task_type_detail(request, task_type_id):
     Displays a Task Type's details.
     """
     task_type = get_object_or_404(TaskType, pk=task_type_id)
-    return render_to_response('task_types/task_type_detail.html', {
+    return render(request, 'task_types/task_type_detail.html', {
             'task_type': task_type,
             'rates': task_type.rates.order_by('effective_from'),
-        }, RequestContext(request))
+        }, )
 
 @user_has_permission(is_admin_or_manager)
 def edit_task_type(request, task_type_id):
@@ -60,7 +76,8 @@ def edit_task_type(request, task_type_id):
         template_object_name = 'task_type',
         template_name='task_types/edit_task_type.html')
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def edit_task_type_rates(request, task_type_id):
     """
@@ -105,11 +122,11 @@ def edit_task_type_rates(request, task_type_id):
                     editable_rates = True
             else:
                 rates.append((rate, None))
-    return render_to_response('task_types/edit_task_type_rates.html', {
+    return render(request, 'task_types/edit_task_type_rates.html', {
             'task_type': task_type,
             'rates': rates,
             'editable_rates': editable_rates,
-        }, RequestContext(request))
+        }, )
 
 class TaskTypeRateForm(TaskTypeRateBaseForm, forms.ModelForm):
     class Meta:
@@ -135,11 +152,11 @@ def add_task_type_rate(request, task_type_id):
                                                 args=(task_type.id,)))
     else:
         form = TaskTypeRateForm(task_type)
-    return render_to_response('task_types/add_task_type_rate.html', {
+    return render(request, 'task_types/add_task_type_rate.html', {
             'form': form,
             'task_type': task_type,
             'rates': task_type.rates.order_by('effective_from'),
-        }, RequestContext(request))
+        }, )
 
 @user_has_permission(is_admin_or_manager)
 def delete_task_type(request, task_type_id):

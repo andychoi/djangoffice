@@ -2,7 +2,7 @@ import mimetypes
 import os
 
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 
 ORDER_VAR = 'o'
@@ -127,9 +127,9 @@ def permission_denied(request, message=u''):
     General view to be used when a user attempts to perform an action
     for which they do not have permission.
     """
-    return render_to_response('permission_denied.html', {
+    return render(request, 'permission_denied.html', {
             message: message,
-        }, RequestContext(request))
+        }, )
 
 def send_file(filename):
     """
@@ -157,6 +157,14 @@ def send_file(filename):
     return response
 
 # Add common and menu tags to builtins
-from django.template import add_to_builtins
-add_to_builtins('djangoffice.templatetags.djangoffice_tags')
-add_to_builtins('djangoffice.templatetags.menu')
+from django.template.engine import Engine
+from django.template.library import import_library
+django_builtins = []
+django_builtins_strings = Engine.default_builtins
+django_builtins.append(import_library('djangoffice.templatetags.djangoffice_tags'))
+django_builtins.append(import_library('djangoffice.templatetags.menu'))
+
+# Django 1.x FIXME
+# from django.template import add_to_builtins
+# add_to_builtins('djangoffice.templatetags.djangoffice_tags')
+# add_to_builtins('djangoffice.templatetags.menu')

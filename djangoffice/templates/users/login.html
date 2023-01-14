@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Login | {% endblock %}
-{% block menu %}{% menu "login" %}{% endblock %}
+{% block menu %}{% include_menu "login" %}{% endblock %}
 {% block extrahead %}
   <script type="text/javascript">
   Event.onDOMReady(function()
@@ -27,7 +27,7 @@
   </table>
   <div class="buttons">
     <input type="hidden" name="next" value="{{ next|escape }}">
-    <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/door_in.png" alt=""> Login</button>
+    <button type="submit" class="positive"><img src="{% static 'img/door_in.png' %}" alt=""> Login</button>
   </div>
 </form>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Add Client | {% endblock %}
-{% block menu %}{% menu "manage" "clients" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "clients" %}{% endblock %}
 {% block content %}
 <h1>Add Client</h1>
 <form name="clientForm" id="clientForm" action="." method="POST">
@@ -11,8 +11,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Add Client</button>
-  <a href="{% url client_list %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/add.png' %}" alt=""> Add Client</button>
+  <a href="{% url client_list %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Execute SQL Report '{{ sql_report.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "reports" "sql_reports" %}{% endblock %}
+{% block menu %}{% include_menu "reports" "sql_reports" %}{% endblock %}
 {% block content %}
 <h1>Execute SQL Report '{{ sql_report.name|escape }}'</h1>
 <p>This SQL Report contains a number of parameters - please provide values for these below.</p>
@@ -11,8 +11,8 @@
 {{ form }}
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/script_go.png" alt=""> Execute SQL Report</button>
-  <a href="{% url sql_report_list %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/script_go.png' %}" alt=""> Execute SQL Report</button>
+  <a href="{% url sql_report_list %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

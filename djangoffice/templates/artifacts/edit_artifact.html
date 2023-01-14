@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Edit Artifact | {% endblock %}
-{% block menu %}{% menu "manage" "jobs" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "jobs" %}{% endblock %}
 {% block content %}
 <h1>Edit Artifact</h1>
 <form name="artifactForm" id="artifactForm" action="." method="POST" enctype="multipart/form-data">
@@ -11,8 +11,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/attach.png" alt=""> Edit Artifact</button>
-  <a href="{% url artifact_list job.formatted_number %}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/attach.png' %}" alt=""> Edit Artifact</button>
+  <a href="{% url artifact_list job.formatted_number %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

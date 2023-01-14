@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}SQL Report '{{ sql_report.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "reports" "sql_reports" %}{% endblock %}
+{% block menu %}{% include_menu "reports" "sql_reports" %}{% endblock %}
 {% block content %}
 <h1>SQL Report '{{ sql_report.name|escape }}'</h1>
 
@@ -12,6 +12,6 @@
 <tbody>
 </table>
 <div class="buttons">
-  <a href="{% url edit_sql_report sql_report.id %}"><img src="{{ MEDIA_URL }}img/script_edit.png" alt=""> Edit SQL Report</a>
+  <a href="{% url edit_sql_report sql_report.id %}"><img src="{% static 'img/script_edit.png' %}" alt=""> Edit SQL Report</a>
 </div>
 {% endblock %}

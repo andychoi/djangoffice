@@ -3,14 +3,15 @@ import string
 from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import (HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseRedirect)
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
-from django.utils import simplejson
+import json
 from django.utils.safestring import mark_safe
-from django.views.generic import create_update, list_detail
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.detail import DetailView
 
 from djangoffice.models import Client, Contact, Job
 from djangoffice.views import SortHeaders
@@ -21,19 +22,35 @@ LIST_HEADERS = (
     (u'Company Name', 'company_name'),
 )
 
-@login_required
-def contact_list(request):
-    """
-    Lists Contacts.
-    """
-    sort_headers = SortHeaders(request, LIST_HEADERS)
-    return list_detail.object_list(request,
-        Contact.objects.order_by(sort_headers.get_order_by()),
-        paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
-        template_object_name='contact',
-        template_name='contacts/contact_list.html', extra_context={
-            'headers': list(sort_headers.headers()),
-        })
+# @login_required
+# def contact_list(request):
+#     """
+#     Lists Contacts.
+#     """
+#     sort_headers = SortHeaders(request, LIST_HEADERS)
+#     return list_detail.object_list(request,
+#         Contact.objects.order_by(sort_headers.get_order_by()),
+#         paginate_by=settings.ITEMS_PER_PAGE, allow_empty=True,
+#         template_object_name='contact',
+#         template_name='contacts/contact_list.html', extra_context={
+#             'headers': list(sort_headers.headers()),
+#         })
+
+from django.views.generic import list as object_list    #list_detail.object_list
+class ContactListView(object_list.ListView):
+    template_object_name='contact',
+    template_name='contacts/contact_list.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(ContactListView, self).get_context_data(**kwargs)
+
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        context['headers'] = list(sort_headers.headers())
+        return context
+    def get_queryset(self):
+        sort_headers = SortHeaders(self.request, LIST_HEADERS)
+        return Client.objects.order_by(sort_headers.get_order_by())
+
 
 @login_required
 def add_contact(request):
@@ -49,10 +66,10 @@ def contact_detail(request, contact_id):
     Displays a Contact's details.
     """
     contact = get_object_or_404(Contact, pk=contact_id)
-    return render_to_response('contacts/contact_detail.html', {
+    return render(request, 'contacts/contact_detail.html', {
             'contact': contact,
             'activities': contact.activities.select_related(),
-        }, RequestContext(request))
+        }, )
 
 @login_required
 def edit_contact(request, contact_id):
@@ -92,11 +109,11 @@ def assign_contacts(request, mode):
        Client.objects.filter(pk=request.GET['client_id']).count():
         contacts = contacts.exclude(clients=request.GET['client_id'])
 
-    contact_json = simplejson.dumps([dict(id=c.id, first_name=c.first_name,
+    contact_json = json.dumps([dict(id=c.id, first_name=c.first_name,
         last_name=c.last_name, company_name=c.company_name,
         position=c.position) for c in contacts])
-    return render_to_response('contacts/assign_contacts.html', {
+    return render(request, 'contacts/assign_contacts.html', {
             'mode': mode,
             'contact_json': mark_safe(contact_json),
             'letters': string.uppercase,
-        }, RequestContext(request))
+        }, )

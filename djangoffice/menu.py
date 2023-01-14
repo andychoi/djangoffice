@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
@@ -75,6 +75,7 @@ def build_menu_items(user, active_section_id=None, active_page_id=None,
     """
     section_items, page_items = [], []
 
+    # section
     for (section_id, label, url_name, user_permission_test) in SECTIONS:
         if user_permission_test and not user_permission_test(user):
             continue
@@ -88,7 +89,8 @@ def build_menu_items(user, active_section_id=None, active_page_id=None,
             'label': escape(label)
         })
 
-    if PAGES.has_key(active_section_id):
+    # page
+    if active_page_id and PAGES[active_page_id]:
         for (page_id, label, url_name, user_permission_test) in PAGES[active_section_id]:
             if user_permission_test and not user_permission_test(user):
                 continue

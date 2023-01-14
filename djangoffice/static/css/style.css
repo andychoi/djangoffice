@@ -13,9 +13,9 @@ table.data th a { color: #fff; }
 
 /* Lists */
 ul.messages { margin: 0; padding: 0; }
-  ul.messages li { list-style-type: none; padding: 4px 5px 4px 25px; margin: 0 0 3px 0; border: 1px solid #c2e1ef; color: #336699; background: #dff4ff url("../img/information.png") 5px .3em no-repeat; }
+  ul.messages li { list-style-type: none; padding: 4px 5px 4px 25px; margin: 0 0 3px 0; border: 1px solid #c2e1ef; color: #336699; background: #dff4ff url("../img/information.png' %}) 5px .3em no-repeat; }
 ul.errorlist { margin: 0; padding: 0; }
-  ul.errorlist li { list-style-type: none; padding: 4px 5px 4px 25px; margin: 0 0 3px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/error.png") 5px .3em no-repeat; }
+  ul.errorlist li { list-style-type: none; padding: 4px 5px 4px 25px; margin: 0 0 3px 0; border: 1px solid #f00; color: #fff; background: #f00 url("../img/error.png' %}) 5px .3em no-repeat; }
 
 /* From http://particletree.com/features/rediscovering-the-button-element/ */
 /* Buttons */

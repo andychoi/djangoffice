@@ -1,14 +1,14 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Delete Artifact Type '{{ artifact_type.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "artifact_types" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "artifact_types" %}{% endblock %}
 {% block content %}
 <h1>Delete Artifact Type</h1>
 <form name="artifactTypeForm" id="artifactTypeForm" action="." method="POST">
 {% csrf_token %}
 <p>Are you sure you want to delete the Artifact Type '{{ artifact_type.name|escape }}'?</p>
 <div class="buttons">
-  <button type="submit" class="negative"><img src="{{ MEDIA_URL }}img/delete.png" alt=""> Delete Artifact Type</button>
-  <a href="{{ artifact_type.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="negative"><img src="{% static 'img/delete.png' %}" alt=""> Delete Artifact Type</button>
+  <a href="{{ artifact_type.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

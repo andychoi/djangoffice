@@ -1,5 +1,5 @@
-{% load timesheet %}{% if entry.is_editable %}
-  <td><a href="{% delete_time_entry_url timesheet user_ entry.id %}"><img src="{{ MEDIA_URL }}img/delete.png" alt="Delete" title="Delete this Time Entry"></a></td>
+{% load static timesheet menu %}{% if entry.is_editable %}
+  <td><a href="{% delete_time_entry_url timesheet user_ entry.id %}"><img src="{% static 'img/delete.png' %}" alt="Delete" title="Delete this Time Entry"></a></td>
   <td>{{ form.job }}</td>
   <td>{{ form.task }}</td>
   <td>{{ form.mon }}</td>

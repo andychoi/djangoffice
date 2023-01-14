@@ -3,7 +3,7 @@ from decimal import Decimal
 from django import forms
 
 from djangoffice.forms.widgets import DateInput, HourInput, MoneyInput
-from djangoffice.models import Expense, ExpenseType, Task, TimeEntry
+from djangoffice.models import Expense, ExpenseType, Task, Job, TimeEntry
 from djangoffice.utils.dates import week_ending_date
 
 class BulkApprovalForm(forms.Form):
@@ -57,7 +57,15 @@ class AddTimeEntryForm(forms.Form):
         for f in instance._meta.fields:
             if f.name not in self.fields:
                 continue
-            setattr(instance, f.name, self.cleaned_data[f.name])
+            if f.name not in ['job', 'task']:
+                setattr(instance, f.name, self.cleaned_data[f.name])
+            # if f.name == 'job':
+            #     val = Job.objects.get(pk=self.cleaned_data[f.name])
+            # elif f.name == 'task':
+            #     val = Task.objects.get(pk=self.cleaned_data[f.name])
+            # else:
+            #     val = self.cleaned_data[f.name]
+            # setattr(instance, f.name, val)    #FIXED dump on task, job as it is not instance...
         instance.job_id = self.cleaned_data['job']
         instance.task_id = self.cleaned_data['task']
         if timesheet:
@@ -97,7 +105,15 @@ class EditTimeEntryForm(AddTimeEntryForm):
         for f in self.time_entry._meta.fields:
             if f.name not in self.fields:
                 continue
-            setattr(self.time_entry, f.name, self.cleaned_data[f.name])
+            if f.name not in ['job', 'task']:
+                setattr(self.time_entry, f.name, self.cleaned_data[f.name])
+            # if f.name == 'job':
+            #     val = Job.objects.get(pk=self.cleaned_data[f.name])
+            # elif f.name == 'task':
+            #     val = Task.objects.get(pk=self.cleaned_data[f.name])
+            # else:
+            #     val = self.cleaned_data[f.name]
+            # setattr(self.time_entry, f.name, val)
         self.time_entry.job_id = self.cleaned_data['job']
         self.time_entry.task_id = self.cleaned_data['task']
         if self.can_approve and self.cleaned_data['approved']:

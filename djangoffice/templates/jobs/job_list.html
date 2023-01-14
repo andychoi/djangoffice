@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Jobs | {% endblock %}
 {% block extrahead %}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/calendar.css" media="screen,projection">
-<script type="text/javascript" src="{{ MEDIA_URL }}js/Calendar.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/calendar.css' %}" media="screen,projection">
+<script type="text/javascript" src="{% static 'js/Calendar.js' %}></script>
 {% endblock %}
-{% block menu %}{% menu "manage" "jobs" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "jobs" %}{% endblock %}
 {% block content %}
 <h1>Jobs</h1>
 
@@ -19,7 +19,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for job in job_list %}<tr class="{% cycle odd,even %}">
+  {% for job in job_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ job.get_absolute_url }}">{{ job.formatted_number }}</a></td>
     <td>{{ job.name|escape }}</td>
     <td>{{ job.client.name|escape }}</td>
@@ -32,7 +32,7 @@
 {% endif %}
 {% if user|is_admin_or_manager %}
 <div class="buttons">
-  <a href="{% url add_job %}"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Add Job</a>
+  <a href="{% url 'add_job' %}"><img src="{% static 'img/add.png' %}" alt=""> Add Job</a>
 </div>
 {% endif %}
 {% endblock %}

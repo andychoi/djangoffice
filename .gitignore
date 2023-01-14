@@ -1,5 +1,82 @@
-*.pyc
-*.egg-info
 MANIFEST
 build/
 dist/
+
+# Python compiled byte code
+*.pyc
+
+# SQLite3 database
+*.sqlite3
+db.json
+.data/
+
+# Staticfiles
+staticfiles/
+
+# Compiled messages
+*.mo
+
+# Log files
+*.log
+*.log.*
+sent_emails/
+
+# cert
+*.pem
+
+# IDE files
+.vscode/
+.idea
+*.iml
+*.ipr
+*.iws
+.settings
+.project
+.pydevproject
+.directory
+
+# Script for different environments
+prod.sh
+dev.sh
+run.sh
+
+# Static files collected
+/static
+
+# Virtual environments
+venv*/
+.venv*/
+
+# environment setting file
+/.env
+/.*.json
+
+/.jupyter
+/jupyter
+/htmlcov
+
+# runtime
+run/
+tmp/
+sent_emails/
+backup/
+
+# file upload folder
+media/
+media-private/
+
+# gunicorn pid file
+*.pid
+
+# SAP trace
+*.trc
+
+# Others
+*.bak 
+*.backup
+dev_log_ex.txt
+
+#dbbackup
+*.bin
+*.dump
+media

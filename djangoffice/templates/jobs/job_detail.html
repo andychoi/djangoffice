@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Job {{ job.formatted_number }} - {{ job.name|escape }} | {% endblock %}
-{% block menu %}{% menu "manage" "jobs" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "jobs" %}{% endblock %}
 {% block content %}
 <h1>Job {{ job.formatted_number }} - {{ job.name|escape }}</h1>
 
 <div class="buttons">
-  <a href="{% url edit_job job.formatted_number %}"><img src="{{ MEDIA_URL }}img/pencil.png" alt=""> Edit Job</a>
-  {% if job.is_deleteable %}<a href="{% url delete_job job.formatted_number %}"><img src="{{ MEDIA_URL }}img/delete.png" alt=""> Delete Job</a>{% endif %}
+  <a href="{% url edit_job job.formatted_number %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Job</a>
+  {% if job.is_deleteable %}<a href="{% url delete_job job.formatted_number %}"><img src="{% static 'img/delete.png' %}" alt=""> Delete Job</a>{% endif %}
 </div>
 
 <div class="section" id="jobDetailsSection">
@@ -67,7 +67,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for task in tasks %}<tr class="{% cycle odd,even %}">
+    {% for task in tasks %}<tr class="{% cycle 'odd' 'even' %}">
       <td>{{ task.task_type.name|escape }}</td>
       <td>
         <ul>
@@ -125,7 +125,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for activity in activities %}<tr class="{% cycle odd,even %}">
+    {% for activity in activities %}<tr class="{% cycle 'odd' 'even' %}">
       <td><a href="{{ activity.get_absolute_url }}">{{ activity.formatted_number }}</a></td>
       <td>{{ activity.type|default:"-"|escape }}</a></td>
       <td><a href="{{ activity.created_by.get_absolute_url }}">{{ activity.created_by.get_full_name|escape }}</a></td>
@@ -142,7 +142,7 @@
   <p>No Activities yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url add_activity %}?job={{ job.id }}"><img src="{{ MEDIA_URL }}img/note_add.png" alt=""> Add Activity</a>
+    <a href="{% url add_activity %}?job={{ job.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
   </div>
 </div>
 
@@ -192,7 +192,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for invoice in invoices %}<tr class="{% cycle odd,even %}">
+    {% for invoice in invoices %}<tr class="{% cycle 'odd' 'even' %}">
       <td><a href="{{ invoice.get_absolute_url }}">{{ invoice.formatted_number }}</a></td>
       <td>{{ invoice.date }}</td>
       <td>{{ invoice.start_period }}</td>
@@ -206,7 +206,7 @@
   <p>No Invoices yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url select_jobs_for_invoice %}?job={{ job.id }}"><img src="{{ MEDIA_URL }}img/page_add.png" alt=""> Create Invoice</a>
+    <a href="{% url select_jobs_for_invoice %}?job={{ job.id }}"><img src="{% static 'img/page_add.png' %}" alt=""> Create Invoice</a>
   </div>
 </div>
 
@@ -226,7 +226,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for artifact in artifacts %}<tr class="{% cycle odd,even %}">
+    {% for artifact in artifacts %}<tr class="{% cycle 'odd' 'even' %}">
       <td>{{ artifact.description|escape }}</td>
       <td>{{ artifact.type|default:"-"|escape }}</a></td>
       <td>{{ artifact.file|escape }}</td>
@@ -241,7 +241,7 @@
   <p>No Artifacts yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url add_artifact job.formatted_number %}"><img src="{{ MEDIA_URL }}img/attach.png" alt=""> Add Artifact</a>
+    <a href="{% url add_artifact job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
   </div>
 </div>
 {% endblock %}

@@ -28,7 +28,7 @@ def job_filter_form(context, filter_form):
     Displays a Job Filter Form.
     """
     return {
-        'MEDIA_URL': context['MEDIA_URL'],
+        # 'MEDIA_URL': context['MEDIA_URL'],
         'filter_form': filter_form,
     }
 

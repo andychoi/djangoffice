@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Activity {{ activity.formatted_number }} | {% endblock %}
-{% block menu %}{% menu "activities" %}{% endblock %}
+{% block menu %}{% include_menu "activities" %}{% endblock %}
 {% block content %}
 <h1>Activity {{ activity.formatted_number }}</h1>
 
@@ -29,7 +29,7 @@
 
 {% if not activity.completed %}
 <div class="buttons">
-  <a href="{% url edit_activity activity.id %}"><img src="{{ MEDIA_URL }}img/note_edit.png" alt=""> Edit Activity</a>
+  <a href="{% url edit_activity activity.id %}"><img src="{% static 'img/note_edit.png' %}" alt=""> Edit Activity</a>
 </div>
 {% endif %}
 {% endblock %}

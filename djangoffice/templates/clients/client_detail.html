@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Client '{{ client.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "clients" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "clients" %}{% endblock %}
 {% block content %}
 <h1>Client '{{ client.name|escape }}'</h1>
 
@@ -11,8 +11,8 @@
 <tbody>
 </table>
 <div class="buttons">
-  <a href="{% url edit_client client.id %}"><img src="{{ MEDIA_URL }}img/pencil.png" alt=""> Edit Client</a>
-  {% if client.is_deleteable %}<a href="{% url delete_client client.id %}"><img src="{{ MEDIA_URL }}img/delete.png" alt=""> Delete Client</a>{% endif %}
+  <a href="{% url edit_client client.id %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Client</a>
+  {% if client.is_deleteable %}<a href="{% url delete_client client.id %}"><img src="{% static 'img/delete.png' %}" alt=""> Delete Client</a>{% endif %}
 </div>
 
 <h2>Jobs</h2>
@@ -26,7 +26,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for job in jobs %}<tr class="{% cycle odd,even %}">
+  {% for job in jobs %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ job.get_absolute_url }}">{{ job.formatted_number }}</a></td>
     <td>{{ job.name|escape }}</td>
     <td>{{ job.get_status_display }}</td>
@@ -38,7 +38,7 @@
 {% endif %}
 {% if user|is_admin_or_manager %}
 <div class="buttons">
-  <a href="{% url add_job %}?client={{ client.id }}"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Add Job</a>
+  <a href="{% url add_job %}?client={{ client.id }}"><img src="{% static 'img/add.png' %}" alt=""> Add Job</a>
 </div>
 {% endif %}
 
@@ -52,7 +52,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for contact in contacts %}<tr class="{% cycle odd,even %}">
+  {% for contact in contacts %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ contact.get_absolute_url }}">{{ contact.full_name|escape }}</a></td>
     <td>{{ contact.company_name|escape }}</td>
   </tr>{% endfor %}
@@ -62,6 +62,6 @@
 <p>No Contacts yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_contact %}?client={{ client.id }}"><img src="{{ MEDIA_URL }}img/group_add.png" alt=""> Add Contact</a>
+  <a href="{% url add_contact %}?client={{ client.id }}"><img src="{% static 'img/group_add.png' %}" alt=""> Add Contact</a>
 </div>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load menu static %}
 {% block title %}Add Expense | {% endblock %}
-{% block menu %}{% menu "timesheets" %}{% endblock %}
+{% block menu %}{% include_menu "timesheets" %}{% endblock %}
 {% block content %}
 <h1>Add Expense</h1>
 <dl>
@@ -36,8 +36,8 @@
 </tbody>
 </table>
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/coins_add.png" alt=""> Add Expense</button>
-  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/coins_add.png' %}" alt=""> Add Expense</button>
+  <a href="{{ timesheet.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Edit Job {{ job.formatted_number }} - {{ job.name|escape }} | {% endblock %}
-{% block menu %}{% menu "manage" "jobs" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "jobs" %}{% endblock %}
 {% block content %}
 <h1>Edit Job {{ job.formatted_number }} - {{ job.name|escape }}</h1>
 
@@ -45,7 +45,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for form in task_forms %}<tr class="{% cycle odd,even %}">
+  {% for form in task_forms %}<tr class="{% cycle 'odd' 'even' %}">
     <td>{{ form.task.task_type_name|escape }}</td>
     <td>
       {{ form.assigned_users }}
@@ -89,7 +89,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for form in new_task_forms %}<tr class="{% cycle odd,even %}">
+  {% for form in new_task_forms %}<tr class="{% cycle 'odd' 'even' %}">
     <td><label for="id_t{{ form.task_type.id }}-add">{{ form.add }} {{ form.task_type.name|escape }}</label></td>
     <td>
       {{ form.assigned_users }}
@@ -112,8 +112,8 @@
 </table>
 
 <div class="buttons">
-  <button type="submit" class="positive"><img src="{{ MEDIA_URL }}img/pencil.png" alt=""> Edit Job</button>
-  <a href="{{ job.get_absolute_url }}" class="negative"><img src="{{ MEDIA_URL }}img/cancel.png" alt=""> Cancel</a>
+  <button type="submit" class="positive"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Job</button>
+  <a href="{{ job.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 
 </form>

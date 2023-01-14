@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Task Type '{{ task_type.name|escape }}' | {% endblock %}
-{% block menu %}{% menu "manage" "task_types" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "task_types" %}{% endblock %}
 {% block content %}
 <h1>Task Type '{{ task_type.name|escape }}'</h1>
 
@@ -10,8 +10,8 @@
 <tbody>
 </table>
 <div class="buttons">
-  <a href="{% url edit_task_type task_type.id %}"><img src="{{ MEDIA_URL }}img/pencil.png" alt=""> Edit Task Type</a>
-  {% if task_type.is_deleteable %}<a href="{% url delete_task_type task_type.id %}"><img src="{{ MEDIA_URL }}img/delete.png" alt=""> Delete Task Type</a>{% endif %}
+  <a href="{% url edit_task_type task_type.id %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Task Type</a>
+  {% if task_type.is_deleteable %}<a href="{% url delete_task_type task_type.id %}"><img src="{% static 'img/delete.png' %}" alt=""> Delete Task Type</a>{% endif %}
 </div>
 
 <h2>Rates</h2>
@@ -25,7 +25,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for rate in rates %}<tr class="{% cycle odd,even %}">
+  {% for rate in rates %}<tr class="{% cycle 'odd' 'even' %}">
     <td>{{ rate.effective_from }}</td>
     <td>{{ rate.standard_rate }}</td>
     <td>{{ rate.overtime_rate }}</td>
@@ -36,6 +36,6 @@
 <p>No Rates yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url edit_task_type_rates task_type.id %}"><img src="{{ MEDIA_URL }}img/coins.png" alt=""> Manage Rates</a>
+  <a href="{% url edit_task_type_rates task_type.id %}"><img src="{% static 'img/coins.png' %}" alt=""> Manage Rates</a>
 </div>
 {% endblock %}

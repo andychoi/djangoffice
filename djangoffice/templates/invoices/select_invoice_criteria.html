@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% load invoice_tags %}{% load money %}
 {% block title %}Select Invoice Criteria | {% endblock %}
-{% block menu %}{% menu "invoices" "create_invoices" %}{% endblock %}
+{% block menu %}{% include_menu "invoices" "create_invoices" %}{% endblock %}
 {% block content %}
 <h1>Select Invoice Criteria</h1>
 
@@ -79,7 +79,7 @@
     </tr>
   </thead>
   <tbody>
-  {% for invoice in jobs.0.invoices.all %}<tr class="{% cycle odd,even %}">
+  {% for invoice in jobs.0.invoices.all %}<tr class="{% cycle 'odd' 'even' %}">
     <td>{{ invoice.formatted_number }}</td>
     <td>{{ invoice.date }}</td>
     <td>{% if invoice.start_period %}{{ invoice.start_period }}{% else %}-{% endif %}</td>
@@ -111,7 +111,7 @@
     </tr>
   </thead>
   <tbody>
-  {% for job in jobs %}<tr class="{% cycle odd,even %}">
+  {% for job in jobs %}<tr class="{% cycle 'odd' 'even' %}">
     <td>{{ job|escape }}</td>
     {% number_field_for_job job from form as number_field %}
     <td>{{ number_field }}</td>
@@ -124,7 +124,7 @@
 
 <div class="buttons" style="clear: both;">
   <input type="hidden" name="step" value="2">
-  <button type="submit" name="create_invoices"><img src="{{ MEDIA_URL }}img/add.png" alt=""> Create Invoices</button>
+  <button type="submit" name="create_invoices"><img src="{% static 'img/add.png' %}" alt=""> Create Invoices</button>
 </div>
 {{ job_form.as_hidden }}
 </form>

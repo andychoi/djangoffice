@@ -4,14 +4,15 @@ import time
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from django.template.defaultfilters import pluralize
-from django.utils import simplejson
+import json
 from django.utils.safestring import mark_safe
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 
 from djangoffice.auth import (is_admin, is_admin_or_manager,
     user_can_access_user, user_has_permission)
@@ -23,6 +24,8 @@ from djangoffice.models import (Expense, ExpenseType, Job, Task, TimeEntry,
 from djangoffice.utils.dates import (is_week_commencing_date,
     week_commencing_date, week_ending_date)
 from djangoffice.views import permission_denied
+
+from django.views.decorators.csrf import requires_csrf_token
 
 #####################
 # Utility functions #
@@ -48,7 +51,7 @@ def get_jobs_and_tasks_for_user(user):
     """
     tasks_by_job = {}
     for task in Task.objects.for_user_timesheet(user):
-        if not tasks_by_job.has_key(task.job_id):
+        if task.job_id not in tasks_by_job:  #.has_key(task.job_id):
             tasks_by_job[task.job_id] = [task]
         else:
             tasks_by_job[task.job_id].append(task)
@@ -67,10 +70,10 @@ def create_task_json(tasks_by_job):
         A dict mapping Job ids to Tasks
     """
     json_dict = {}
-    for job_id, tasks in tasks_by_job.iteritems():
+    for job_id, tasks in tasks_by_job.items():
         json_dict[job_id] = [dict(value=task.id, text=task.task_type_name) \
                              for task in tasks]
-    return simplejson.dumps(json_dict)
+    return json.dumps(json_dict)
 
 #########
 # Views #
@@ -88,7 +91,8 @@ def timesheet_index(request):
                                         week_commencing=week_commencing)
     return HttpResponseRedirect(timesheet.get_absolute_url())
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @user_has_permission(is_admin)
 def bulk_approval(request):
     """
@@ -102,20 +106,22 @@ def bulk_approval(request):
             entries, expenses = Timesheet.objects.bulk_approve(request.user,
                                                                start_date,
                                                                end_date)
-            return render_to_response('timesheets/bulk_approval.html', {
+            return render(request,'timesheets/bulk_approval.html', {
                 'start_date': start_date,
                 'end_date': end_date,
                 'approved_time_entries': entries,
                 'approved_expenses': expenses,
-            }, RequestContext(request))
+            }, )
     else:
         form = BulkApprovalForm()
-    return render_to_response('timesheets/bulk_approval.html', {
+    return render(request,'timesheets/bulk_approval.html', {
             'form': form,
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @login_required
+@requires_csrf_token
 def edit_timesheet(request, username, year, month, day):
     """
     Edits a User's complete Timesheet for a particular week.
@@ -229,16 +235,18 @@ def edit_timesheet(request, username, year, month, day):
             else:
                 expenses.append((expense, None))
 
-    return render_to_response('timesheets/edit_timesheet.html', {
+    return render(request,'timesheets/edit_timesheet.html', {
             'user_': user,
             'timesheet': timesheet,
             'time_entries': time_entries,
             'expenses': expenses,
             'task_json': mark_safe(create_task_json(tasks_by_job)),
             'can_approve': can_approve,
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@requires_csrf_token
+@transaction.atomic
 @user_has_permission(is_admin_or_manager)
 def approve_timesheet(request, username, year, month, day):
     """
@@ -255,12 +263,14 @@ def approve_timesheet(request, username, year, month, day):
         Timesheet.objects.get_or_create(user=user,
                                         week_commencing=week_commencing)
     entries, expenses = timesheet.approve(request.user)
-    messages.success(requset, '%s time entr%s and %s expense%s were approved.' \
+    messages.success(request, '%s time entr%s and %s expense%s were approved.' \
                               % (entries, pluralize(entries, u'y,ies'),
                                  expenses, pluralize(expenses)))
     return HttpResponseRedirect(timsheet.get_absolute_url())
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@requires_csrf_token
+@transaction.atomic
 @login_required
 def prepopulate_timesheet(request, username, year, month, day):
     """
@@ -290,14 +300,16 @@ def prepopulate_timesheet(request, username, year, month, day):
         messages.warning('Cannot prepopulate as there is no Timesheet for the previous week.')
     return HttpResponseRedirect(timesheet.get_absolute_url())
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@requires_csrf_token
+@transaction.atomic
 @login_required
 def add_time_entry(request, username, year, month, day):
     """
     Adds a Time Entry to a User's Timesheet.
     """
     user = get_object_or_404(User, username=username)
-    if user.get_profile().is_admin():
+    if user.userprofile.is_admin():
         return HttpResponseBadRequest(
             u'Time Entries may not be created for administration accounts.')
     if not user_can_access_user(request.user, user):
@@ -323,14 +335,15 @@ def add_time_entry(request, username, year, month, day):
                                                       day)))
     else:
         form = AddTimeEntryForm(jobs)
-    return render_to_response('timesheets/add_time_entry.html', {
+    return render(request,'timesheets/add_time_entry.html', {
             'user_': user,
             'timesheet': timesheet,
             'form': form,
             'task_json': mark_safe(create_task_json(tasks_by_job)),
-        }, RequestContext(request))
+        },)
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @login_required
 def delete_time_entry(request, username, year, month, day, time_entry_id):
     """
@@ -356,13 +369,14 @@ def delete_time_entry(request, username, year, month, day, time_entry_id):
     else:
         time_entry.job_display = u'%05d - %s' % (time_entry.job_number,
                                                  time_entry.job_name)
-        return render_to_response('timesheets/delete_time_entry.html', {
+        return render(request, 'timesheets/delete_time_entry.html', {
                 'user_': user,
                 'timesheet': timesheet,
                 'entry': time_entry,
-            }, RequestContext(request))
+            }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @login_required
 def add_expense(request, username, year, month, day):
     """
@@ -388,13 +402,14 @@ def add_expense(request, username, year, month, day):
                                                       day)))
     else:
         form = AddExpenseForm(jobs, week_commencing)
-    return render_to_response('timesheets/add_expense.html', {
+    return render(request, 'timesheets/add_expense.html', {
             'user_': user,
             'timesheet': timesheet,
             'form': form,
-        }, RequestContext(request))
+        }, )
 
-@transaction.commit_on_success
+# @transaction.commit_on_success
+@transaction.atomic
 @login_required
 def delete_expense(request, username, year, month, day, expense_id):
     """
@@ -420,8 +435,8 @@ def delete_expense(request, username, year, month, day, expense_id):
     else:
         expense.job_display = u'%05d - %s' % (expense.job_number,
                                               expense.job_name)
-        return render_to_response('timesheets/delete_expense.html', {
+        return render(request, 'timesheets/delete_expense.html', {
                 'user_': user,
                 'timesheet': timesheet,
                 'expense': expense,
-            }, RequestContext(request))
+            }, )

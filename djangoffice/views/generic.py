@@ -3,7 +3,7 @@ from django import forms
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import (get_list_or_404, get_object_or_404,
-    render_to_response)
+    render)
 from django.template import RequestContext
 
 def add_object(request, model, fields=None, template_name=None,
@@ -33,7 +33,7 @@ def add_object(request, model, fields=None, template_name=None,
             context[key] = value()
         else:
             context[key] = value
-    return render_to_response(template_name, context, RequestContext(request))
+    return render(None,template_name, context, )  # RequestContext(request))
 
 def edit_object(request, model, pk, fields=None, template_name=None,
         template_object_name='object', extra_context=None):
@@ -64,7 +64,7 @@ def edit_object(request, model, pk, fields=None, template_name=None,
             context[key] = value()
         else:
             context[key] = value
-    return render_to_response(template_name, context, RequestContext(request))
+    return render(None,template_name, context, )  # RequestContext(request))
 
 def delete_objects(request, model, pks, post_delete_redirect,
         template_name=None, template_object_name='object'):

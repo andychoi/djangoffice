@@ -1,7 +1,9 @@
 from datetime import timedelta
 from django import template
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import dateformat
+from django.conf import settings
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -16,7 +18,7 @@ def edit_time_entry_row(context, entry, form):
     using the given Form.
     """
     return {
-        'MEDIA_URL': context['MEDIA_URL'],
+        # 'MEDIA_URL': context['MEDIA_URL'],
         'timesheet': context['timesheet'],
         'user_': context['user_'],
         'entry': entry,
@@ -30,7 +32,7 @@ def edit_expense_row(context, expense, form):
     using the given Form.
     """
     return {
-        'MEDIA_URL': context['MEDIA_URL'],
+        # 'MEDIA_URL': context['MEDIA_URL'],
         'timesheet': context['timesheet'],
         'user_': context['user_'],
         'expense': expense,
@@ -81,9 +83,11 @@ def day_headers(date):
     """
     Generate table headers for 7 days starting on the given date.
     """
-    return u'\n'.join([u'<th scope="col">%s</th>' % \
-                       dateformat.format(date + timedelta(days=i), r'D\<\b\r\>jS') \
-                       for i in xrange(7)])
+    text = u'\n'.join([u'<th scope="col">%s</th>' % \
+                       dateformat.format(date + timedelta(days=i), 'M/d') \
+                       for i in range(7)])
+    return mark_safe(text)
+
 @register.simple_tag
 def delete_time_entry_url(timesheet, user, id):
     """

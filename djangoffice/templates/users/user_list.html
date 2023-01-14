@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "base.html" %}  {% load static djangoffice_tags menu %}
 {% block title %}Users | {% endblock %}
-{% block menu %}{% menu "manage" "users" %}{% endblock %}
+{% block menu %}{% include_menu "manage" "users" %}{% endblock %}
 {% block content %}
 <h1>Users</h1>
 
@@ -35,7 +35,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for user_ in user_list %}<tr class="{% cycle odd,even %}">
+  {% for user_ in user_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ user_.get_absolute_url|escape }}">{{ user_.username|escape }}</a></td>
     <td>{{ user_.get_profile.get_role_display|escape }}</td>
     <td>{{ user_.first_name|escape }}</td>
@@ -50,6 +50,6 @@
 <p>No Users yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_user %}"><img src="{{ MEDIA_URL }}img/user_add.png" alt=""> Add User</a>
+  <a href="{% url add_user %}"><img src="{% static 'img/user_add.png' %}" alt=""> Add User</a>
 </div>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}{% load money %}
+{% extends "base.html" %}{% load static menu djangoffice_tags money %}
 {% block title %}Invoices | {% endblock %}
-{% block menu %}{% menu "invoices" "invoices" %}{% endblock %}
+{% block menu %}{% include_menu "invoices" "invoices" %}{% endblock %}
 {% block content %}
 <h1>Invoices</h1>
 
@@ -12,7 +12,7 @@
   </tr>
 </thead>
 <tbody>
-  {% for invoice in invoice_list %}<tr class="{% cycle odd,even %}">
+  {% for invoice in invoice_list %}<tr class="{% cycle 'odd' 'even' %}">
     <td><a href="{{ invoice.get_absolute_url }}">{{ invoice.formatted_number }}</a></td>
     <td>{{ invoice.date }}</td>
     <td>{{ invoice.start_period|default:"-" }}</td>
