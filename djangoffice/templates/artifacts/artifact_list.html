@@ -13,21 +13,25 @@
 </thead>
 <tbody>
   {% for artifact in artifact_list %}<tr class="{% cycle 'odd' 'even' %}">
-    <td><a href="{% url artifact_detail job.formatted_number,artifact.id %}">{{ artifact.description|escape }}</a></td>
+    <td><a href="{% url 'artifact_detail' job.formatted_number artifact.id %}">{{ artifact.description|escape }}</a></td>
     <td>{{ artifact.type|default:"-"|escape }}</a></td>
     <td>{{ artifact.file|escape }}</td>
     <td>{{ artifact.get_file_size }}</td>
     <td>{{ artifact.created_at }}</td>
     <td>{{ artifact.updated_at }}</td>
     <td>{{ artifact.get_access_display }}</td>
-    <td><a href="{% url download_artifact job.formatted_number,artifact.id %}">Download</a></td>
+    <td><a href="{% url 'download_artifact' job.formatted_number artifact.id %}">Download</a></td>
   </tr>{% endfor %}
 </tbody>
 </table>
 {% else %}
 <p class="noneyet">No Artifacts yet.</p>
 {% endif %}
+
+{% if artifact_list %}
 <div class="buttons">
-  <a href="{% url add_artifact job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
+  <a href="{% url 'add_artifact' job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
 </div>
+{% endif %}
+
 {% endblock %}

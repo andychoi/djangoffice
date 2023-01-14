@@ -38,7 +38,7 @@
 {% endif %}
 {% if user|is_admin_or_manager %}
 <div class="buttons">
-  <a href="{% url add_job %}?client={{ client.id }}"><img src="{% static 'img/add.png' %}" alt=""> Add Job</a>
+  <a href="{% url 'add_job' %}?client={{ client.id }}"><img src="{% static 'img/add.png' %}" alt=""> Add Job</a>
 </div>
 {% endif %}
 
@@ -62,6 +62,6 @@
 <p>No Contacts yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_contact %}?client={{ client.id }}"><img src="{% static 'img/group_add.png' %}" alt=""> Add Contact</a>
+  <a href="{% url 'add_contact' %}?client={{ client.id }}"><img src="{% static 'img/group_add.png' %}" alt=""> Add Contact</a>
 </div>
 {% endblock %}

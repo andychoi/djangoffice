@@ -165,6 +165,8 @@ COMPANY_CONTACT = {
 }
 COMPANY_URL = 'http://www.generitech.co.uk'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # Load local settings if present - place setting modifications in a
 # local_settings module rather than editing this file, which should
 # contain development settings.

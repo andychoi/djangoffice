@@ -50,6 +50,6 @@
 <p>No Users yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_user %}"><img src="{% static 'img/user_add.png' %}" alt=""> Add User</a>
+  <a href="{% url 'add_user' %}"><img src="{% static 'img/user_add.png' %}" alt=""> Add User</a>
 </div>
 {% endblock %}

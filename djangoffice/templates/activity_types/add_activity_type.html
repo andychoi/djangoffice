@@ -12,7 +12,7 @@
 </table>
 <div class="buttons">
   <button type="submit" class="positive"><img src="{% static 'img/add.png' %}" alt=""> Add Activity Type</button>
-  <a href="{% url activity_type_list %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
+  <a href="{% url 'activity_type_list' %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

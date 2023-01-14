@@ -32,7 +32,8 @@ class DynamicModelChoiceField(forms.Field):
         else:
             try:
                 value = self.model._meta.pk.to_python(value)
-                value = self.model._default_manager.get(pk=value)
+                # value = self.model._default_manager.get(pk=value)   #TODO
+                value = self.model.objects.get(pk=value)   
             except validators.ValidationError as e:
                 raise forms.ValidationError(e.messages[0])
             except self.model.DoesNotExist:
@@ -65,7 +66,8 @@ class DynamicChoice(forms.Widget):
         if value != '':
             final_attrs['value'] = force_str(value)
             try:
-                instance = self.model._default_manager.get(pk=value)
+                # instance = self.model._default_manager.get(pk=value) FIXME
+                instance = self.model.objects.get(pk=value)
                 item = escape(force_str(self.display_func(instance)))
             except self.model.DoesNotExist:
                 pass
@@ -106,7 +108,8 @@ class MultipleDynamicModelChoiceField(forms.ChoiceField):
         self._initial = value
         if value is not None and len(value):
             if not isinstance(value[0], self.model):
-                value = self.model._default_manager.filter(pk__in=value)
+                # value = self.model._default_manager.filter(pk__in=value)
+                value = self.model.objects.filter(pk__in=value)
             self.choices = [(i.pk, self.display_func(i)) for i in value]
 
     initial = property(_get_initial, _set_initial)
@@ -127,7 +130,8 @@ class MultipleDynamicModelChoiceField(forms.ChoiceField):
         final_values = []
         try:
             pk_values = [pk_field.to_python(v) for v in value]
-            final_values = list(self.model._default_manager.filter(pk__in=pk_values))
+            # FIXME final_values = list(self.model._default_manager.filter(pk__in=pk_values))
+            final_values = list(self.model.objects.filter(pk__in=pk_values))
             if len(pk_values) != len(final_values):
                 raise forms.ValidationError(
                     u'This field must specify existing %s.' % \
@@ -159,7 +163,9 @@ class DynamicSelectMultiple(forms.Widget):
         if value is None: value = []
         if value and not self.choices:
             self.choices = [(i.pk, self.display_func(i)) for i in \
-                            self.model._default_manager.filter(pk__in=value)]
+                            # self.model._default_manager.filter(pk__in=value)] FIXME
+                            self.model.objects.filter(pk__in=value)] 
+
         # final_attrs = self.build_attrs(attrs, name=name) #FIXME
         final_attrs = self.build_attrs(base_attrs=attrs, extra_attrs={'name':name,})
         output = [u'<select multiple="multiple"%s>' % flatatt(final_attrs)]

@@ -53,16 +53,17 @@ LIST_HEADERS = (
 from django.views.generic import list as object_list    #list_detail.object_list
 class ArtifactListView(object_list.ListView):
     template_object_name='artifact',
-    template_name='artifact/artifact_list.html'
+    template_name='artifacts/artifact_list.html'
     
     def get_context_data(self, **kwargs):
         context = super(ArtifactListView, self).get_context_data(**kwargs)
-        job_number = kwargs['job_number']
+        job_number = kwargs.get('job_number', None)
         
-        job = get_object_or_404(Job, number=int(job_number))
-        sort_headers = SortHeaders(self.request, LIST_HEADERS)
-        context['job'] = job
-        context['headers'] = list(sort_headers.headers())
+        if job_number:
+            job = get_object_or_404(Job, number=int(job_number))
+            sort_headers = SortHeaders(self.request, LIST_HEADERS)
+            context['job'] = job
+            context['headers'] = list(sort_headers.headers())
         return context
 
     def get_queryset(self):

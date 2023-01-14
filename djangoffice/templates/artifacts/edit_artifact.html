@@ -12,7 +12,7 @@
 </table>
 <div class="buttons">
   <button type="submit" class="positive"><img src="{% static 'img/attach.png' %}" alt=""> Edit Artifact</button>
-  <a href="{% url artifact_list job.formatted_number %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
+  <a href="{% url 'artifact_list' job.formatted_number %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>
 {% endblock %}

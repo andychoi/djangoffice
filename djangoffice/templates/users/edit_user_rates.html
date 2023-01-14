@@ -34,7 +34,7 @@
   {% if editable_rates %}
   <button type="submit" class="positive"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Rates</button>
   {% endif %}
-  <a href="{% url add_user_rate user_.username %}" class="positive"><img src="{% static 'img/coins_add.png' %}" alt=""> Add Rate</a>
+  <a href="{% url 'add_user_rate' user_.username %}" class="positive"><img src="{% static 'img/coins_add.png' %}" alt=""> Add Rate</a>
   <a href="{{ user_.get_absolute_url }}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 </form>

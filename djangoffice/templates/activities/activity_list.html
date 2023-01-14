@@ -69,6 +69,6 @@ Event.onDOMReady(function()
 <h2>No Activities found</h2>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_activity %}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
+  <a href="{% url 'add_activity' %}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
 </div>
 {% endblock %}

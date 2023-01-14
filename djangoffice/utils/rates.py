@@ -47,7 +47,8 @@ class RateLookup:
         if rebuild_lookup:
             self._lookup = {} # Maps rated object ids to lists of rates
             related_object_id_attr = '%_id' % self.related_object_attr
-            for rate in self.model._default_manager.order_by('effective_from'):
+            # for rate in self.model._default_manager.order_by('effective_from'): FIXME
+            for rate in self.model.objects.all().order_by('effective_from'):
                 object_id = getattr(rate, related_object_id_attr)
                 # if not self._lookup.has_key(object_id):
                 if object_id not in self._lookup:

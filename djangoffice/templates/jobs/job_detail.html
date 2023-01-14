@@ -5,7 +5,7 @@
 <h1>Job {{ job.formatted_number }} - {{ job.name|escape }}</h1>
 
 <div class="buttons">
-  <a href="{% url edit_job job.formatted_number %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Job</a>
+  <a href="{% url 'edit_job' job.formatted_number %}"><img src="{% static 'img/pencil.png' %}" alt=""> Edit Job</a>
   {% if job.is_deleteable %}<a href="{% url delete_job job.formatted_number %}"><img src="{% static 'img/delete.png' %}" alt=""> Delete Job</a>{% endif %}
 </div>
 
@@ -142,7 +142,7 @@
   <p>No Activities yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url add_activity %}?job={{ job.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
+    <a href="{% url 'add_activity' %}?job={{ job.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
   </div>
 </div>
 
@@ -206,7 +206,8 @@
   <p>No Invoices yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url select_jobs_for_invoice %}?job={{ job.id }}"><img src="{% static 'img/page_add.png' %}" alt=""> Create Invoice</a>
+    <!-- select_jobs_for_ -->
+    <a href="{% url 'create_invoices' %}?job={{ job.id }}"><img src="{% static 'img/page_add.png' %}" alt=""> Create Invoice</a>
   </div>
 </div>
 
@@ -241,7 +242,7 @@
   <p>No Artifacts yet.</p>
   {% endif %}
   <div class="buttons">
-    <a href="{% url add_artifact job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
+    <a href="{% url 'add_artifact' job.formatted_number %}"><img src="{% static 'img/attach.png' %}" alt=""> Add Artifact</a>
   </div>
 </div>
 {% endblock %}

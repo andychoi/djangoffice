@@ -44,6 +44,6 @@
 <p>No Activities yet.</p>
 {% endif %}
 <div class="buttons">
-  <a href="{% url add_activity %}?contact={{ contact.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
+  <a href="{% url 'add_activity' %}?contact={{ contact.id }}"><img src="{% static 'img/note_add.png' %}" alt=""> Add Activity</a>
 </div>
 {% endblock %}
