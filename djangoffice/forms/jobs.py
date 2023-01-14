@@ -1,5 +1,6 @@
 import operator
 
+import functools    # importing reduce()
 from django import forms
 from django.contrib.auth.models import User
 from django.db.models.query import Q
@@ -131,8 +132,14 @@ class JobFilterForm(FilterBaseForm, forms.Form):
         if len(filters) == 0:
             return None
         else:
-            return reduce(operator.and_, filters)
+            return functools.reduce(operator.and_, filters)
 
+    # def reduce(func, items):
+    #     result = items.pop()
+    #     for item in items:
+    #         result = func(result, item)
+
+        return result
 class AddJobForm(forms.Form):
     """
     A form for adding a new Job.

@@ -90,7 +90,7 @@ def build_menu_items(user, active_section_id=None, active_page_id=None,
         })
 
     # page
-    if active_page_id and PAGES[active_page_id]:
+    if PAGES.get(active_page_id, ""):
         for (page_id, label, url_name, user_permission_test) in PAGES[active_section_id]:
             if user_permission_test and not user_permission_test(user):
                 continue

@@ -61,7 +61,8 @@ class TableSelectMultiple(forms.SelectMultiple):
     def render(self, name, value, attrs=None, choices=()):
         if value is None: value = []
         has_id = attrs and 'id' in attrs
-        final_attrs = self.build_attrs(attrs, name=name)
+        # final_attrs = self.build_attrs(attrs, name=name) #FIXME
+        final_attrs = self.build_attrs(base_attrs=attrs, extra_attrs={'name':name,})
         output = []
         str_values = set([force_str(v) for v in value]) # Normalize to strings.
         for i, (option_value, item) in enumerate(self.choices):

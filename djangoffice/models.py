@@ -435,26 +435,29 @@ class JobManager(models.Manager):
                .exclude(pk=settings.ADMIN_JOB_ID)
         if profile.is_manager() and not access.managers_view_all_jobs or \
            (profile.is_pm() or profile.is_user()) and not access.users_view_all_jobs:
-            opts = self.model._meta
+            job_opts = self.model._meta
             task_opts = Task._meta
             qs = qs.extra(
-                where=["""
-                %(job)s.%(job_pk)s IN (
-                    SELECT DISTINCT %(task)s.%(job_fk)s
-                    FROM %(task)s
-                    INNER JOIN %(assigned_users)s
-                        ON %(assigned_users)s.%(task_fk)s = %(task)s.%(task_pk)s
-                    WHERE %(assigned_users)s.%(user_fk)s = %%s
-                )""" % {
-                    'job': qn(opts.db_table),
-                    'job_pk': qn(opts.pk.column),
-                    'job_fk': qn(task_opts.get_field('job').column),
-                    'task': qn(task_opts.db_table),
-                    'task_pk': qn(task_opts.pk.column),
-                    'task_fk': qn(task_opts.get_field('assigned_users', True).m2m_column_name()),
-                    'assigned_users': qn(assigned_users_rel.m2m_db_table()),
-                    'user_fk': qn(assigned_users_rel.m2m_reverse_name()),
-                }],
+## FIXME
+                where=[],
+                # where=["""
+                #     %(job)s.%(job_pk)s IN (
+                #         SELECT DISTINCT %(task)s.%(job_fk)s
+                #         FROM %(task)s
+                #         INNER JOIN %(assigned_users)s
+                #             ON %(assigned_users)s.%(task_fk)s = %(task)s.%(task_pk)s
+                #         WHERE %(assigned_users)s.%(user_fk)s = %%s
+                #     )""" % {
+                #     'job':      qn(job_opts.db_table),
+                #     'job_pk':   qn(job_opts.pk.column),
+                #     'job_fk':   qn(task_opts.get_field('job').column),
+                #     'task':     qn(task_opts.db_table),
+                #     'task_pk':  qn(task_opts.pk.column),
+                #     'task_fk':  qn(task_opts.get_field('assigned_users').m2m_column_name()),
+                #     #FIXME please
+                #     # 'assigned_users': qn(assigned_users.m2m_db_table()),
+                #     # 'user_fk': qn(assigned_users_rel.m2m_reverse_name()),
+                # }],
                 params=[user.id],
             )
 

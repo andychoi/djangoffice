@@ -104,7 +104,7 @@ Event.onDOMReady(function()
 
 <div class="buttons">
   <button type="submit" class="positive"><img src="{% static 'img/add.png' %}" alt=""> Add Job</button>
-  <a href="{% url job_list %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
+  <a href="{% url 'job_list' %}" class="negative"><img src="{% static 'img/cancel.png' %}" alt=""> Cancel</a>
 </div>
 
 </form>

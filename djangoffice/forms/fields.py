@@ -60,7 +60,7 @@ class DynamicChoice(forms.Widget):
 
     def render(self, name, value, attrs=None):
         if value is None: value = ''
-        final_attrs = self.build_attrs(attrs, type='hidden', name=name)
+        final_attrs = self.build_attrs(base_attrs=attrs, extra_attrs={'type':'hidden', 'name':name})   #https://stackoverflow.com/questions/52136525/build-attrs-got-an-unexpected-keyword-argument-type
         item = ''
         if value != '':
             final_attrs['value'] = force_str(value)
@@ -160,7 +160,8 @@ class DynamicSelectMultiple(forms.Widget):
         if value and not self.choices:
             self.choices = [(i.pk, self.display_func(i)) for i in \
                             self.model._default_manager.filter(pk__in=value)]
-        final_attrs = self.build_attrs(attrs, name=name)
+        # final_attrs = self.build_attrs(attrs, name=name) #FIXME
+        final_attrs = self.build_attrs(base_attrs=attrs, extra_attrs={'name':name,})
         output = [u'<select multiple="multiple"%s>' % flatatt(final_attrs)]
         for option_value, option_label in chain(self.choices, choices):
             output.append(u'<option value="%s" selected="selected">%s</option>' % (
